@@ -41,7 +41,8 @@ public class Player extends Entity {
             // change these for all 8 sprites
         } catch (IOException e) {
 
-            System.getLogger(GamePanel.class.getName()).log(System.Logger.Level.ERROR, (String) null, e);
+            System.getLogger(GamePanel.class.getName()).log(System.Logger.Level.ERROR, (String) null,
+                    e);
 
         } catch (IllegalArgumentException e) {
 
@@ -95,11 +96,11 @@ public class Player extends Entity {
                 image = right1;
                 break;
         }
-        
-        // change these for all 8 sprites
 
+        // change these for all 8 sprites
         if (image != null) {
             g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
         }
     }
+
 }
