@@ -1,4 +1,4 @@
-package com.mycompany.test;
+package scuttle.view;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
