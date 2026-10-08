@@ -15,6 +15,10 @@ public class World {
     public World() {
         this.player = new Player(new Position(VISIBLE_COLUMNS / 2, VISIBLE_ROWS / 2));
         this.lanes = new ArrayList<>();
+        this.isDead = false;
+        this.tickCounter = 0;
+
+        //TEMP HardCoded Lanes
         String generationCode = "................" + "................" + "................"
                 + "................" + "................" + "..C......C....C." + "....C.......C..."
                 + ".CC.....CC....C." + "......C.....C..." + "..C.C.....C...CC" + "C.....CC.......C"
@@ -28,12 +32,10 @@ public class World {
             lanes.addLast(new GroundLane(cellArray));
         }
         lanes.set(7, new FishLane(new ArrayList<Mover>(List.of(new Mover(1, 2), new Mover(-2, 1),
-                new Mover(5, 3))), 20, 1));
+                new Mover(5, 3))), 2000, 1));
         lanes.set(8, new FishLane(new ArrayList<Mover>(List.of(new Mover(17, 2), new Mover(10, 1),
                 new Mover(5, 3))), 10, -1));
 
-        this.isDead = false;
-        this.tickCounter = 0;
     }
 
     public boolean isDead() {
@@ -45,6 +47,7 @@ public class World {
     }
 
     private boolean canMoveTo(Position p) {
+        //TODO Helper method
         return (p.getColumn() >= 0 && p.getColumn() < VISIBLE_COLUMNS) && (p.getRow() >= 0
                 && p.getRow() < VISIBLE_ROWS)
                 && lanes.get(p.getRow()).canStepOn(p.getColumn());

@@ -116,7 +116,6 @@ public class GamePanel extends JPanel implements ActionListener {
         }
         if (direction != null) {
             world.movePlayer(direction);
-
         }
         world.update();
     }
@@ -130,6 +129,7 @@ public class GamePanel extends JPanel implements ActionListener {
         BufferedImage image = directionImageMap.get(player.getFacing());
         int posX = player.getPosition().getColumn() * TILE_SIZE;
         int posY = (VISIBLE_ROWS - 1 - player.getPosition().getRow()) * TILE_SIZE;
+        //Lane Rendering
         for (int i = 0; i < VISIBLE_ROWS; i++) {
             for (int j = 0; j < VISIBLE_COLUMNS; j++) {
                 if (!world.getLanes().get(i).canStepOn(j)) {

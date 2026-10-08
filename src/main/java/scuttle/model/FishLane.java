@@ -5,7 +5,7 @@ import java.util.List;
 
 public class FishLane extends Lane {
 
-    private final List<Mover> movers;
+    private final List<Mover> fishes;
     private final int ticksPerStep;//ticks in between each update
     private final int direction;// 1 || -1 determines in which direction a fish moves
 
@@ -13,7 +13,7 @@ public class FishLane extends Lane {
         super(LaneType.FISH);
         this.direction = direction;
         this.ticksPerStep = updateTime;
-        this.movers = movers;
+        this.fishes = movers;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class FishLane extends Lane {
 
     @Override
     public boolean isDeadly(int column) {
-        for (Mover m: movers) {
+        for (Mover m: fishes) {
             if (m.covers(column)) {
                 return true;
             }
@@ -34,14 +34,14 @@ public class FishLane extends Lane {
     @Override
     public void update(int tick) {
         if (tick % this.ticksPerStep == 0) {
-            for (Mover m: movers) {
+            for (Mover m: fishes) {
                 m.shift(direction);
             }
         }
     }
 
-    public List<Mover> getMovers() {
-        return Collections.unmodifiableList(movers);
+    public List<Mover> getFishes() {
+        return Collections.unmodifiableList(fishes);
     }
 
 }
