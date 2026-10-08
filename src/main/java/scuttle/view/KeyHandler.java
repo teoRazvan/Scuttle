@@ -2,16 +2,27 @@ package scuttle.view;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import scuttle.model.Direction;
 
 public class KeyHandler implements KeyListener {
 
-    public boolean upPressed, downPressed, leftPressed, rightPressed;
+    private final GameInput gameInput;
+    private boolean upHeld;
+    private boolean downHeld;
+    private boolean leftHeld;
+    private boolean rightHeld;
 
-    public boolean upReleased, downReleased, leftReleased, rightReleased;
+    public KeyHandler(GameInput gameInput) {
+        this.gameInput = gameInput;
+        upHeld = false;
+        downHeld = false;
+        leftHeld = false;
+        rightHeld = false;
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
-        return;
+        // not used: movement reacts to pressed/released
     }
 
     @Override
@@ -19,47 +30,57 @@ public class KeyHandler implements KeyListener {
 
         int code = e.getKeyCode();
 
-        if (code == KeyEvent.VK_W && !upPressed) {
-            upPressed = true;
+        switch (code) {
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> {
+                if (!upHeld) {
+                    gameInput.move(Direction.UP);
+                    upHeld = true;
+                }
+            }
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> {
+                if (!downHeld) {
+                    gameInput.move(Direction.DOWN);
+                    downHeld = true;
+                }
+            }
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> {
+                if (!leftHeld) {
+                    gameInput.move(Direction.LEFT);
+                    leftHeld = true;
+                }
+            }
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> {
+                if (!rightHeld) {
+                    gameInput.move(Direction.RIGHT);
+                    rightHeld = true;
+                }
+            }
+            //TEMP untill Game Over menu
+            case KeyEvent.VK_R -> {
+                gameInput.restart();
+            }
+            default -> {/*other input is ignored*/
+            }
         }
-        if (code == KeyEvent.VK_A && !leftPressed) {
-            leftPressed = true;
-        }
-        if (code == KeyEvent.VK_S && !downPressed) {
-            downPressed = true;
-        }
-        if (code == KeyEvent.VK_D && !rightPressed) {
-            rightPressed = true;
-        }
+
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
 
         int code = e.getKeyCode();
-        if (code == KeyEvent.VK_W) {
-            if (upPressed) {
-                upReleased = true;
-                upPressed = false;
+        switch (code) {
+            case KeyEvent.VK_W, KeyEvent.VK_UP ->
+                upHeld = false;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN ->
+                downHeld = false;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT ->
+                leftHeld = false;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT ->
+                rightHeld = false;
+            default -> {/*other input is ignored*/
             }
-        }
-        if (code == KeyEvent.VK_A) {
-            if (leftPressed) {
-                leftReleased = true;
-                leftPressed = false;
-            }
-        }
-        if (code == KeyEvent.VK_S) {
-            if (downPressed) {
-                downReleased = true;
-                downPressed = false;
-            }
-        }
-        if (code == KeyEvent.VK_D) {
-            if (rightPressed) {
-                rightReleased = true;
-                rightPressed = false;
-            }
+
         }
     }
 

@@ -3,26 +3,32 @@ package scuttle.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import static scuttle.model.Constants.*;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.Constants.VISIBLE_ROWS;
 
 public class World {
 
     private final Player player;
     private final List<Lane> lanes;
     private int tickCounter;
-    private boolean isDead;
+    private boolean gameOver;
 
     public World() {
         this.player = new Player(new Position(VISIBLE_COLUMNS / 2, VISIBLE_ROWS / 2));
         this.lanes = new ArrayList<>();
-        this.isDead = false;
+        this.gameOver = false;
         this.tickCounter = 0;
 
         //TEMP HardCoded Lanes
-        String generationCode = "................" + "................" + "................"
-                + "................" + "................" + "..C......C....C." + "....C.......C..."
-                + ".CC.....CC....C." + "......C.....C..." + "..C.C.....C...CC" + "C.....CC.......C"
-                + "...C.......C.C..";
+        String generationCode = "............................\n" + "............................\n"
+                + "...C....CC......C.....CC..C.\n" + "............................\n"
+                + ".C....C.C....CC.....C....C..\n" + "............................\n"
+                + "............................\n" + ".....C.........C..C.......C.\n"
+                + "CC...C...CCC....C....CC..C.C\n" + "............................\n"
+                + "............................\n" + "...C.....C.....C......C...C.\n"
+                + "CCCC..CCCCCC..CCCC..CCCC..CC\n" + "............................\n"
+                + "..C....CC.....C....C.C...C..\n" + "............................\n"
+                + "............................\n" + "............................";
         for (int i = 0; i < VISIBLE_ROWS; i++) {
             CellType[] cellArray = new CellType[VISIBLE_COLUMNS];
             for (int j = 0; j < VISIBLE_COLUMNS; j++) {
@@ -38,12 +44,13 @@ public class World {
 
     }
 
-    public boolean isDead() {
-        return isDead;
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     private void checkDeath() {
-        isDead = lanes.get(player.getPosition().getRow()).isDeadly(player.getPosition().getColumn());
+        gameOver = lanes.get(player.getPosition().getRow()).isDeadly(
+                player.getPosition().getColumn());
     }
 
     private boolean canMoveTo(Position p) {
@@ -62,21 +69,21 @@ public class World {
     }
 
     public void movePlayer(Direction movementDirection) {
-        if (isDead) {
+        if (gameOver) {
             return;
         }
         Position newPosition = switch (movementDirection) {
             case DOWN ->
-                newPosition = new Position(player.getPosition().getColumn(),
+                new Position(player.getPosition().getColumn(),
                 player.getPosition().getRow() - 1);
             case UP ->
-                newPosition = new Position(player.getPosition().getColumn(),
+                new Position(player.getPosition().getColumn(),
                 player.getPosition().getRow() + 1);
             case LEFT ->
-                newPosition = new Position(player.getPosition().getColumn() - 1,
+                new Position(player.getPosition().getColumn() - 1,
                 player.getPosition().getRow());
             case RIGHT ->
-                newPosition = new Position(player.getPosition().getColumn() + 1,
+                new Position(player.getPosition().getColumn() + 1,
                 player.getPosition().getRow());
         };
 
@@ -87,7 +94,7 @@ public class World {
     }
 
     public void update() {
-        if (isDead) {
+        if (gameOver) {
             return;
         }
         tickCounter++;

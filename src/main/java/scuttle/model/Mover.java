@@ -9,6 +9,9 @@ public class Mover {
     private final int length;
 
     public Mover(int startCell, int length) {
+        if (length >= HIDDEN_MARGIN * 2) {
+            throw new IllegalArgumentException("Length must be less then to 2X the hidden margin");
+        }
         this.startCell = wrapHelper(startCell);
         this.length = length;
     }

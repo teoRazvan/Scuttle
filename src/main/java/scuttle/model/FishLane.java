@@ -1,5 +1,6 @@
 package scuttle.model;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -9,11 +10,17 @@ public class FishLane extends Lane {
     private final int ticksPerStep;//ticks in between each update
     private final int direction;// 1 || -1 determines in which direction a fish moves
 
-    public FishLane(List<Mover> movers, int updateTime, int direction) {
+    public FishLane(List<Mover> movers, int ticksPerStep, int direction) {
         super(LaneType.FISH);
+        if (ticksPerStep <= 0) {
+            throw new IllegalArgumentException("ticksPerStep must be greater then 0");
+        }
+        if (direction != 1 && direction != -1) {
+            throw new IllegalArgumentException("direction must be 1 or -1");
+        }
         this.direction = direction;
-        this.ticksPerStep = updateTime;
-        this.fishes = movers;
+        this.ticksPerStep = ticksPerStep;
+        this.fishes = new ArrayList<>(movers);
     }
 
     @Override

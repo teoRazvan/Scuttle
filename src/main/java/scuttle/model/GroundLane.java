@@ -2,11 +2,11 @@ package scuttle.model;
 
 public class GroundLane extends Lane {
 
-    CellType[] cellArray;
+    private final CellType[] cellArray;
 
     public GroundLane(CellType[] cellArray) {
         super(LaneType.GROUND);
-        this.cellArray = cellArray;
+        this.cellArray = cellArray.clone();
     }
 
     @Override

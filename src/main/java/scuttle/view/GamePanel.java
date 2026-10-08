@@ -10,12 +10,17 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import static scuttle.model.Constants.*;
+import static scuttle.model.Constants.TICK_DELAY;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.Direction;
+import scuttle.model.Lane;
+import scuttle.model.LaneType;
 import scuttle.model.Player;
 import scuttle.model.World;
 
@@ -25,7 +30,7 @@ import scuttle.model.World;
  *
  * TEMP it runs the game loop and handles input, will be changed later
  */
-public class GamePanel extends JPanel implements ActionListener {
+public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     private static final int ORIGINAL_TILE_SIZE = 16; // Sprite size in pixels
     private static final int SCALE = 3;// How much sprites are enlarged
@@ -37,12 +42,13 @@ public class GamePanel extends JPanel implements ActionListener {
 
     private final Timer timer;
     private final Map<Direction, BufferedImage> directionImageMap = new EnumMap<>(Direction.class);
-    private final KeyHandler keyH = new KeyHandler();
+    private final KeyHandler keyH;
     private World world = new World();
 
     public GamePanel() {
         timer = new Timer(TICK_DELAY, this);
-        this.getPlayerImage();
+        keyH = new KeyHandler(this);
+        this.loadPlayerSprites();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);
@@ -50,13 +56,12 @@ public class GamePanel extends JPanel implements ActionListener {
         this.setFocusable(true);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        this.update();
-        this.repaint();
+    public void startGame() {
+        timer.start();
+        this.requestFocusInWindow();
     }
 
-    private void getPlayerImage() {
+    private void loadPlayerSprites() {
 
         try {
 
@@ -88,76 +93,108 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    public void startGame() {
-        timer.start();
-        this.requestFocusInWindow();
+    @Override
+    public void move(Direction direction) {
+        world.movePlayer(direction);
     }
 
-    public void update() {
-        Direction direction = null;
-        if (keyH.upReleased == true) {
-            direction = Direction.UP;
-            keyH.upReleased = false;
+    @Override
+    public void restart() {
+        if (world.isGameOver()) {
+            world = new World();
         }
+    }
 
-        if (keyH.downReleased == true) {
-            direction = Direction.DOWN;
-            keyH.downReleased = false;
-        }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        this.update();
+        this.repaint();
+    }
 
-        if (keyH.leftReleased == true) {
-            direction = Direction.LEFT;
-            keyH.leftReleased = false;
+    private Color laneColor(LaneType t) {
+        switch (t) {
+            case LaneType.FISH -> {
+                return new Color(40, 110, 180);
+            }
+            case LaneType.GROUND -> {
+                return new Color(230, 205, 150);
+            }
+            case LaneType.RAFT -> {
+                return new Color(90, 160, 210);
+            }
+            case LaneType.TORPEDO -> {
+                return new Color(20, 40, 90);
+            }
+            default -> {
+                return null;
+            }
         }
+    }
 
-        if (keyH.rightReleased == true) {
-            direction = Direction.RIGHT;
-            keyH.rightReleased = false;
+    private int rowToY(int row) {
+        return (VISIBLE_ROWS - 1 - row) * TILE_SIZE;
+    }
+
+    private int columnToX(int column) {
+        return column * TILE_SIZE;
+    }
+
+    private void drawLanes(Graphics2D g) {
+        List<Lane> lanes = world.getLanes();
+
+        for (int row = 0; row < Math.min(VISIBLE_ROWS, lanes.size()); row++) {
+            Lane lane = lanes.get(row);
+            g.setColor(laneColor(lane.getType()));
+            g.fillRect(columnToX(0), rowToY(row), SCREEN_WIDTH, TILE_SIZE);
+            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+                if (!lane.canStepOn(column)) {
+                    g.setColor(new Color(240, 110, 110));
+                    g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                }
+                if (lane.isDeadly(column)) {
+                    g.setColor(new Color(255, 150, 40));
+                    g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                }
+            }
         }
-        if (direction != null) {
-            world.movePlayer(direction);
-        }
-        world.update();
+    }
+
+    private void drawPlayer(Graphics2D g) {
+
+        Player player = world.getPlayer();
+        BufferedImage image = directionImageMap.get(player.getFacing());
+        int posX = columnToX(player.getPosition().getColumn());
+        int posY = rowToY(player.getPosition().getRow());
+        g.drawImage(image, posX, posY, TILE_SIZE, TILE_SIZE, null);
+    }
+
+    private void drawGameOver(Graphics2D g) {
+        final String gameOverString = "GAME OVER";
+
+        //TEMP
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
+        g.setColor(new Color(255, 0, 0, 255));
+        g.drawString(gameOverString, (SCREEN_WIDTH - g.getFontMetrics().stringWidth(gameOverString))
+                / 2, (SCREEN_HEIGHT - g.getFontMetrics().getHeight()) / 2
+                + g.getFontMetrics().getAscent());
     }
 
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2 = (Graphics2D) g;
-        Player player = world.getPlayer();
-        BufferedImage image = directionImageMap.get(player.getFacing());
-        int posX = player.getPosition().getColumn() * TILE_SIZE;
-        int posY = (VISIBLE_ROWS - 1 - player.getPosition().getRow()) * TILE_SIZE;
-        //Lane Rendering
-        for (int i = 0; i < VISIBLE_ROWS; i++) {
-            for (int j = 0; j < VISIBLE_COLUMNS; j++) {
-                if (!world.getLanes().get(i).canStepOn(j)) {
-                    g2.setColor(Color.WHITE);
-                    g2.fillRect(j * TILE_SIZE, (VISIBLE_ROWS - 1 - i) * TILE_SIZE, TILE_SIZE,
-                            TILE_SIZE);
-                }
-                if (world.getLanes().get(i).isDeadly(j)) {
-                    g2.setColor(Color.RED);
-                    g2.fillRect(j * TILE_SIZE, (VISIBLE_ROWS - 1 - i) * TILE_SIZE, TILE_SIZE,
-                            TILE_SIZE);
-                }
-            }
-        }
-        g2.drawImage(image, posX, posY, TILE_SIZE, TILE_SIZE, null);
-        //TEMP separate method
-        if (world.isDead()) {
-            g2.setColor(new Color(0, 0, 0, 150));
-            g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-            g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-            g2.setColor(new Color(255, 0, 0, 255));
-
-            g2.drawString("GAME OVER", (SCREEN_WIDTH - g2.getFontMetrics().stringWidth(
-                    "GAME OVER")) / 2, (SCREEN_HEIGHT - g2.getFontMetrics().getHeight()) / 2
-                    + g2.getFontMetrics().getAscent());
-
+        drawLanes(g2);
+        drawPlayer(g2);
+        if (world.isGameOver()) {
+            drawGameOver(g2);
         }
 
+    }
+
+    private void update() {
+        world.update();
     }
 
 }
