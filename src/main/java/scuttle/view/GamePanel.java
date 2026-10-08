@@ -114,13 +114,13 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private Color laneColor(LaneType t) {
         switch (t) {
             case LaneType.FISH -> {
-                return new Color(40, 110, 180);
+                return new Color(90, 160, 210);
             }
             case LaneType.GROUND -> {
                 return new Color(230, 205, 150);
             }
             case LaneType.RAFT -> {
-                return new Color(90, 160, 210);
+                return new Color(40, 110, 180);
             }
             case LaneType.TORPEDO -> {
                 return new Color(20, 40, 90);
@@ -151,9 +151,16 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
                     g.setColor(new Color(240, 110, 110));
                     g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
                 }
-                if (lane.isDeadly(column)) {
-                    g.setColor(new Color(255, 150, 40));
-                    g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                if (lane.getType() == LaneType.FISH) {
+                    if (lane.isDeadly(column)) {
+                        g.setColor(new Color(255, 150, 40));
+                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                    }
+                } else if (lane.getType() == LaneType.RAFT) {
+                    if (!lane.isDeadly(column)) {
+                        g.setColor(new Color(140, 90, 50));
+                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                    }
                 }
             }
         }

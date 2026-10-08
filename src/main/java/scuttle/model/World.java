@@ -38,8 +38,10 @@ public class World {
             lanes.addLast(new GroundLane(cellArray));
         }
         lanes.set(7, new FishLane(new ArrayList<Mover>(List.of(new Mover(1, 2), new Mover(-2, 1),
-                new Mover(5, 3))), 2000, 1));
+                new Mover(5, 3))), 30, 1));
         lanes.set(8, new FishLane(new ArrayList<Mover>(List.of(new Mover(17, 2), new Mover(10, 1),
+                new Mover(5, 3))), 10, -1));
+        lanes.set(3, new RaftLane(new ArrayList<Mover>(List.of(new Mover(20, 4), new Mover(10, 5),
                 new Mover(5, 3))), 10, -1));
 
     }
@@ -98,6 +100,13 @@ public class World {
             return;
         }
         tickCounter++;
+        if (lanes.get(player.getPosition().getRow()).drift(tickCounter) != 0) {
+            Position newPosition = new Position(player.getPosition().getColumn() + lanes.get(
+                    player.getPosition().getRow()).drift(
+                    tickCounter), player.getPosition().getRow());
+            player.move(newPosition, player.getFacing());
+
+        }
         for (Lane l: lanes) {
             l.update(tickCounter);
         }

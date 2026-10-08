@@ -20,4 +20,8 @@ public abstract class Lane {
 
     }
 
+    public int drift(int tick) {
+        return 0;
+    }
+
 }
