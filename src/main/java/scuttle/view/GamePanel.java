@@ -1,10 +1,14 @@
 package scuttle.view;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -13,6 +17,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import static scuttle.model.Constants.TICK_DELAY;
@@ -43,9 +48,14 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private final Timer timer;
     private final Map<Direction, BufferedImage> directionImageMap = new EnumMap<>(Direction.class);
     private final KeyHandler keyH;
+    private final JPanel overlay;
+    private final JButton restartButton;
+    private final JButton menuButton;
+    private final Runnable onMenu;
     private World world = new World();
 
-    public GamePanel() {
+    public GamePanel(Runnable onMenu) {
+        this.onMenu = onMenu;
         timer = new Timer(TICK_DELAY, this);
         keyH = new KeyHandler(this);
         this.loadPlayerSprites();
@@ -54,6 +64,31 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         this.setDoubleBuffered(true);
         this.addKeyListener(keyH);
         this.setFocusable(true);
+        this.setLayout(new BorderLayout());
+
+        overlay = new JPanel(new GridBagLayout());
+        overlay.setOpaque(false);
+        overlay.setVisible(false);
+
+        restartButton = new JButton("RESTART");
+        restartButton.setFocusable(false);
+        restartButton.addActionListener(e -> restart());
+
+        menuButton = new JButton("MENU");
+        menuButton.setFocusable(false);
+        menuButton.addActionListener(e -> returnToMenu());
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.insets = new Insets(167, 8, 8, 8);
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+
+        constraints.gridy = 0;
+        overlay.add(restartButton, constraints);
+        constraints.gridy = 1;
+        constraints.insets = new Insets(8, 8, 8, 8);
+        overlay.add(menuButton, constraints);
+        this.add(overlay, BorderLayout.CENTER);
     }
 
     public void startGame() {
@@ -102,7 +137,16 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     public void restart() {
         if (world.isGameOver()) {
             world = new World();
+            overlay.setVisible(false);
+            this.requestFocusInWindow();
         }
+    }
+
+    private void returnToMenu() {
+        timer.stop();
+        world = new World();
+        overlay.setVisible(false);
+        onMenu.run();
     }
 
     @Override
@@ -200,8 +244,16 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     }
 
+    @Override
+    public boolean isOptimizedDrawingEnabled() {
+        return false;
+    }
+
     private void update() {
         world.update();
+        if (world.isGameOver() != overlay.isVisible()) {
+            overlay.setVisible(world.isGameOver());
+        }
     }
 
 }

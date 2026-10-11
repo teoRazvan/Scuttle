@@ -1,25 +1,10 @@
 package scuttle.view;
 
-import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 public class Scuttle {
 
     public static void main(String[] args) {
-
-        JFrame window = new JFrame();
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setResizable(false);
-        window.setTitle("Scuttle");
-
-        GamePanel gamePanel = new GamePanel();
-        window.add(gamePanel);
-
-        window.pack();
-
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
-
-        gamePanel.startGame();
+        SwingUtilities.invokeLater(() -> new GameWindow().show());
     }
-
 }
