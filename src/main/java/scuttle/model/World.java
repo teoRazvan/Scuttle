@@ -2,7 +2,11 @@ package scuttle.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import static scuttle.model.Constants.INITIAL_COINS;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 
@@ -10,14 +14,21 @@ public class World {
 
     private final Player player;
     private final List<Lane> lanes;
+    private final Set<Position> coins = new HashSet<>();
+    private final Random random = new Random();
     private int tickCounter;
     private boolean gameOver;
+    private int score, furthestRow;
+    private int coinsCollected;
 
     public World() {
         this.player = new Player(new Position(VISIBLE_COLUMNS / 2, VISIBLE_ROWS / 2));
         this.lanes = new ArrayList<>();
         this.gameOver = false;
         this.tickCounter = 0;
+        this.score = 0;
+        this.furthestRow = player.getPosition().getRow();
+        this.coinsCollected = 0;
 
         //TEMP HardCoded Lanes
         String generationCode = "............................\n" + "............................\n"
@@ -44,6 +55,7 @@ public class World {
         lanes.set(3, new RaftLane(new ArrayList<Mover>(List.of(new Mover(20, 4), new Mover(10, 5),
                 new Mover(5, 3))), 10, -1));
 
+        spawnCoins(INITIAL_COINS);
     }
 
     public boolean isGameOver() {
@@ -53,6 +65,18 @@ public class World {
     private void checkDeath() {
         gameOver = lanes.get(player.getPosition().getRow()).isDeadly(
                 player.getPosition().getColumn());
+    }
+    
+    public int getScore() {
+        return score;
+    }
+
+    public int getCoinAmount() {
+        return coinsCollected;
+    }
+
+    public Set<Position> getCoins() {
+        return Collections.unmodifiableSet(coins);
     }
 
     private boolean canMoveTo(Position p) {
@@ -91,7 +115,13 @@ public class World {
 
         if (canMoveTo(newPosition)) {
             player.move(newPosition, movementDirection);
+            collectCoinAtPlayer();
             checkDeath();
+        }
+        int row = player.getPosition().getRow();
+        if (row > furthestRow) {
+            score += row - furthestRow;
+            furthestRow = row;
         }
     }
 
@@ -105,12 +135,44 @@ public class World {
                     player.getPosition().getRow()).drift(
                     tickCounter), player.getPosition().getRow());
             player.move(newPosition, player.getFacing());
-
+            collectCoinAtPlayer();
         }
-        for (Lane l: lanes) {
+        for (Lane l : lanes) {
             l.update(tickCounter);
         }
         checkDeath();
+    }
+
+    private void spawnCoins(int count) {
+        List<Position> candidates = new ArrayList<>();
+        Position playerPosition = player.getPosition();
+        for (int row = 0; row < lanes.size(); row++) {
+            Lane lane = lanes.get(row);
+            if (lane.getType() != LaneType.GROUND) {
+                continue;
+            }
+            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+                if (!lane.canStepOn(column)) {
+                    continue;
+                }
+                Position cell = new Position(column, row);
+                if (!cell.equals(playerPosition) && !coins.contains(cell)) {
+                    candidates.add(cell);
+                }
+            }
+        }
+        Collections.shuffle(candidates, random);
+        int toPlace = Math.min(count, candidates.size());
+        for (int i = 0; i < toPlace; i++) {
+            coins.add(candidates.get(i));
+        }
+    }
+
+    private void collectCoinAtPlayer() {
+        if (coins.remove(player.getPosition())) {
+            coinsCollected++;
+            spawnCoins(1);
+        }
     }
 
 }

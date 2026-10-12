@@ -2,6 +2,7 @@ package scuttle.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -10,8 +11,10 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
+import scuttle.model.CoinAmount;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
+import scuttle.model.HighScore;
 
 public class MainMenu extends JPanel {
 
@@ -19,7 +22,7 @@ public class MainMenu extends JPanel {
     private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE;
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE;
     private static final int MARGIN = 24;
-
+    
     private final BufferedImage background;
     private final int crateX;
     private final int crateY;
@@ -86,5 +89,13 @@ public class MainMenu extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         g2.drawImage(background, crateX, crateY, crateWidth, crateHeight, null);
+        
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        g2.setColor(Color.WHITE);
+        g2.drawString("Best: " + HighScore.getBest(), 16, 28);
+        
+        g2.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 18));
+        g2.setColor(Color.YELLOW);
+        g2.drawString("Coins: " + CoinAmount.getAmount(), 14, 50);
     }
 }

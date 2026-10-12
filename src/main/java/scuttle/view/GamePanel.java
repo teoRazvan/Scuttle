@@ -20,13 +20,16 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import scuttle.model.CoinAmount;
 import static scuttle.model.Constants.TICK_DELAY;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.Direction;
+import scuttle.model.HighScore;
 import scuttle.model.Lane;
 import scuttle.model.LaneType;
 import scuttle.model.Player;
+import scuttle.model.Position;
 import scuttle.model.World;
 
 /**
@@ -210,6 +213,15 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         }
     }
 
+    private void drawCoins(Graphics2D g) {
+        g.setColor(new Color(255, 200, 40));
+        int pad = TILE_SIZE / 4;
+        int size = TILE_SIZE / 2;
+        for (Position coin : world.getCoins()) {
+            g.fillOval(columnToX(coin.getColumn()) + pad, rowToY(coin.getRow()) + pad, size, size);
+        }
+    }
+
     private void drawPlayer(Graphics2D g) {
 
         Player player = world.getPlayer();
@@ -230,6 +242,24 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         g.drawString(gameOverString, (SCREEN_WIDTH - g.getFontMetrics().stringWidth(gameOverString))
                 / 2, (SCREEN_HEIGHT - g.getFontMetrics().getHeight()) / 2
                 + g.getFontMetrics().getAscent());
+
+        String scoreText = "Score: " + world.getScore();
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
+        g.setColor(Color.WHITE);
+        int x = (SCREEN_WIDTH - g.getFontMetrics().stringWidth(scoreText)) / 2;
+        int y = SCREEN_HEIGHT / 2 + 40;  // below the centered title
+        g.drawString(scoreText, x, y);
+        
+    }
+
+    private void drawScore(Graphics2D g) {
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        g.setColor(Color.WHITE);
+        g.drawString("Score: " + world.getScore(), 16, 28);
+        
+        g.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 20));
+        g.setColor(Color.YELLOW);
+        g.drawString("Coins: " + world.getCoinAmount(), 16, 52);
     }
 
     @Override
@@ -237,10 +267,12 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         drawLanes(g2);
+        drawCoins(g2);
         drawPlayer(g2);
         if (world.isGameOver()) {
             drawGameOver(g2);
         }
+        drawScore(g2);
 
     }
 
@@ -252,6 +284,8 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private void update() {
         world.update();
         if (world.isGameOver() != overlay.isVisible()) {
+            HighScore.submit(world.getScore());
+            CoinAmount.add(world.getCoinAmount());
             overlay.setVisible(world.isGameOver());
         }
     }
