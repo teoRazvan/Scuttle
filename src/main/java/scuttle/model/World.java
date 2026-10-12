@@ -54,6 +54,7 @@ public class World {
                 new Mover(5, 3))), 10, -1));
         lanes.set(3, new RaftLane(new ArrayList<Mover>(List.of(new Mover(20, 4), new Mover(10, 5),
                 new Mover(5, 3))), 10, -1));
+        lanes.set(10, new TorpedoLane(240, 60, 20, 120));
 
         spawnCoins(INITIAL_COINS);
     }
@@ -66,7 +67,7 @@ public class World {
         gameOver = lanes.get(player.getPosition().getRow()).isDeadly(
                 player.getPosition().getColumn());
     }
-    
+
     public int getScore() {
         return score;
     }
@@ -137,7 +138,7 @@ public class World {
             player.move(newPosition, player.getFacing());
             collectCoinAtPlayer();
         }
-        for (Lane l : lanes) {
+        for (Lane l: lanes) {
             l.update(tickCounter);
         }
         checkDeath();

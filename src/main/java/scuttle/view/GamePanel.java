@@ -30,6 +30,7 @@ import scuttle.model.Lane;
 import scuttle.model.LaneType;
 import scuttle.model.Player;
 import scuttle.model.Position;
+import scuttle.model.TorpedoLane;
 import scuttle.model.World;
 
 /**
@@ -48,6 +49,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE; // 768 pixels
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE; // 576 pixels
 
+    private int warningCounter = 0;
     private final Timer timer;
     private final Map<Direction, BufferedImage> directionImageMap = new EnumMap<>(Direction.class);
     private final KeyHandler keyH;
@@ -154,6 +156,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        this.warningCounter++;
         this.update();
         this.repaint();
     }
@@ -209,6 +212,19 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
                         g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
                     }
                 }
+                if (lane instanceof TorpedoLane) {
+                    if (((TorpedoLane) lane).isWarning() && (warningCounter / 10) % 2 == 0) {
+                        g.setColor(new Color(255, 40, 40, 110));
+                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                    } else if (((TorpedoLane) lane).isFiring()) {
+                        g.setColor(new Color(60, 60, 70));
+                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                    } else {
+                        g.setColor(new Color(20, 40, 90));
+                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+                    }
+                }
+
             }
         }
     }
@@ -217,7 +233,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         g.setColor(new Color(255, 200, 40));
         int pad = TILE_SIZE / 4;
         int size = TILE_SIZE / 2;
-        for (Position coin : world.getCoins()) {
+        for (Position coin: world.getCoins()) {
             g.fillOval(columnToX(coin.getColumn()) + pad, rowToY(coin.getRow()) + pad, size, size);
         }
     }
@@ -249,14 +265,14 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         int x = (SCREEN_WIDTH - g.getFontMetrics().stringWidth(scoreText)) / 2;
         int y = SCREEN_HEIGHT / 2 + 40;  // below the centered title
         g.drawString(scoreText, x, y);
-        
+
     }
 
     private void drawScore(Graphics2D g) {
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
         g.setColor(Color.WHITE);
         g.drawString("Score: " + world.getScore(), 16, 28);
-        
+
         g.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 20));
         g.setColor(Color.YELLOW);
         g.drawString("Coins: " + world.getCoinAmount(), 16, 52);
