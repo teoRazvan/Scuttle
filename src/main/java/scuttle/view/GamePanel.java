@@ -182,7 +182,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     }
 
     private int rowToY(int row) {
-        return (VISIBLE_ROWS - 1 - row) * TILE_SIZE;
+        return (VISIBLE_ROWS - 1 - (row - world.getCameraRow())) * TILE_SIZE;
     }
 
     private int columnToX(int column) {
@@ -192,7 +192,8 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private void drawLanes(Graphics2D g) {
         List<Lane> lanes = world.getLanes();
 
-        for (int row = 0; row < Math.min(VISIBLE_ROWS, lanes.size()); row++) {
+        for (int row = world.getCameraRow(); row < Math.min(VISIBLE_ROWS + world.getCameraRow(),
+                lanes.size()); row++) {
             Lane lane = lanes.get(row);
             g.setColor(laneColor(lane.getType()));
             g.fillRect(columnToX(0), rowToY(row), SCREEN_WIDTH, TILE_SIZE);

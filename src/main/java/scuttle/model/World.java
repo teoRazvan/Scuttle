@@ -6,9 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import static scuttle.model.Constants.CAMERA_OFFSET;
 import static scuttle.model.Constants.INITIAL_COINS;
+import static scuttle.model.Constants.LANES_AHEAD;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
-import static scuttle.model.Constants.VISIBLE_ROWS;
 
 public class World {
 
@@ -20,9 +21,12 @@ public class World {
     private boolean gameOver;
     private int score, furthestRow;
     private int coinsCollected;
+    private final LaneGenerator generator = new LaneGenerator();
+    private int cameraRow;
 
     public World() {
-        this.player = new Player(new Position(VISIBLE_COLUMNS / 2, VISIBLE_ROWS / 2));
+        this.cameraRow = 0;
+        this.player = new Player(new Position(VISIBLE_COLUMNS / 2, 2));
         this.lanes = new ArrayList<>();
         this.gameOver = false;
         this.tickCounter = 0;
@@ -30,31 +34,7 @@ public class World {
         this.furthestRow = player.getPosition().getRow();
         this.coinsCollected = 0;
 
-        //TEMP HardCoded Lanes
-        String generationCode = "............................\n" + "............................\n"
-                + "...C....CC......C.....CC..C.\n" + "............................\n"
-                + ".C....C.C....CC.....C....C..\n" + "............................\n"
-                + "............................\n" + ".....C.........C..C.......C.\n"
-                + "CC...C...CCC....C....CC..C.C\n" + "............................\n"
-                + "............................\n" + "...C.....C.....C......C...C.\n"
-                + "CCCC..CCCCCC..CCCC..CCCC..CC\n" + "............................\n"
-                + "..C....CC.....C....C.C...C..\n" + "............................\n"
-                + "............................\n" + "............................";
-        for (int i = 0; i < VISIBLE_ROWS; i++) {
-            CellType[] cellArray = new CellType[VISIBLE_COLUMNS];
-            for (int j = 0; j < VISIBLE_COLUMNS; j++) {
-                cellArray[j] = generationCode.charAt(i * VISIBLE_COLUMNS + j) == '.' ? CellType.FREE
-                        : CellType.CORAL;
-            }
-            lanes.addLast(new GroundLane(cellArray));
-        }
-        lanes.set(7, new FishLane(new ArrayList<Mover>(List.of(new Mover(1, 2), new Mover(-2, 1),
-                new Mover(5, 3))), 30, 1));
-        lanes.set(8, new FishLane(new ArrayList<Mover>(List.of(new Mover(17, 2), new Mover(10, 1),
-                new Mover(5, 3))), 10, -1));
-        lanes.set(3, new RaftLane(new ArrayList<Mover>(List.of(new Mover(20, 4), new Mover(10, 5),
-                new Mover(5, 3))), 10, -1));
-        lanes.set(10, new TorpedoLane(240, 60, 20, 120));
+        generateAhead();
 
         spawnCoins(INITIAL_COINS);
     }
@@ -66,6 +46,10 @@ public class World {
     private void checkDeath() {
         gameOver = lanes.get(player.getPosition().getRow()).isDeadly(
                 player.getPosition().getColumn());
+    }
+
+    public int getCameraRow() {
+        return cameraRow;
     }
 
     public int getScore() {
@@ -80,10 +64,16 @@ public class World {
         return Collections.unmodifiableSet(coins);
     }
 
+    private void generateAhead() {
+        while (lanes.size() < player.getPosition().getRow() + LANES_AHEAD) {
+            lanes.add(generator.next());
+        }
+    }
+
     private boolean canMoveTo(Position p) {
         //TODO Helper method
-        return (p.getColumn() >= 0 && p.getColumn() < VISIBLE_COLUMNS) && (p.getRow() >= 0
-                && p.getRow() < VISIBLE_ROWS)
+        return (p.getColumn() >= 0 && p.getColumn() < VISIBLE_COLUMNS) && (p.getRow() >= cameraRow
+                && p.getRow() < lanes.size())
                 && lanes.get(p.getRow()).canStepOn(p.getColumn());
     }
 
@@ -115,7 +105,9 @@ public class World {
         };
 
         if (canMoveTo(newPosition)) {
+            generateAhead();
             player.move(newPosition, movementDirection);
+            cameraRow = Math.max(cameraRow, player.getPosition().getRow() - CAMERA_OFFSET);
             collectCoinAtPlayer();
             checkDeath();
         }

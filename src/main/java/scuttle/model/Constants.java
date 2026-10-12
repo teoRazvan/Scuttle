@@ -20,4 +20,6 @@ public final class Constants {
     //Number of coins that spawn when the player enters the game
     public static final int INITIAL_COINS = 8;
 
+    public static final int CAMERA_OFFSET = 4;
+
 }
