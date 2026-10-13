@@ -7,14 +7,10 @@ import static scuttle.model.Constants.HIDDEN_MARGIN;
 import static scuttle.model.Constants.LANE_WIDTH;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
-/**
- *
- * @author teo03
- */
 public class LaneGenerator {
 
-    private static final int CORAL_CHANCE = 15;
-    private static final int MAX_DANGER_STREAK = 3;
+    private static final int CORAL_CHANCE = 25;
+    private static final int MAX_DANGER_STREAK = 4;
 
     private final Random random;
     private int lanesMade;
@@ -133,14 +129,14 @@ public class LaneGenerator {
 
     private Lane makeFish() {
         Lane fishLane;
-        fishLane = new FishLane(placeMoovers(randomBetween(2, 4), 1, 2), randomBetween(10, 30),
+        fishLane = new FishLane(placeMoovers(randomBetween(2, 5), 1, 2), randomBetween(10, 30),
                 nextDirection());
         return fishLane;
     }
 
     private Lane makeRaft() {
         Lane raftLane;
-        raftLane = new RaftLane(placeMoovers(randomBetween(3, 4), 2, 4), randomBetween(15, 30),
+        raftLane = new RaftLane(placeMoovers(randomBetween(3, 5), 2, 4), randomBetween(15, 30),
                 nextDirection());
         return raftLane;
     }
