@@ -6,7 +6,7 @@ public class GroundLane extends Lane {
 
     public GroundLane(CellType[] cellArray) {
         super(LaneType.GROUND);
-        this.cellArray = cellArray;
+        this.cellArray = cellArray.clone();
     }
 
     @Override
