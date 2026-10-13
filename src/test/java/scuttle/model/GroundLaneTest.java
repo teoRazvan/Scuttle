@@ -22,7 +22,6 @@ public class GroundLaneTest {
 
     @Test
     public void canStepOnFree() {
-
         assertTrue(groundLane.canStepOn(1));
     }
 
@@ -42,7 +41,6 @@ public class GroundLaneTest {
     @Test
     public void typeIsGround() {
         assertEquals(LaneType.GROUND, groundLane.getType());
-
     }
 
     @Test
