@@ -2,3 +2,4 @@ target/
 nbproject/private/
 .DS_Store
 /nbproject/
+dist/
