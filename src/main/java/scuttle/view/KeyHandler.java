@@ -59,6 +59,9 @@ public class KeyHandler implements KeyListener {
             case KeyEvent.VK_R -> {
                 gameInput.restart();
             }
+            case KeyEvent.VK_ESCAPE -> {
+                gameInput.togglePause();
+            }
             default -> {/*other input is ignored*/
             }
         }

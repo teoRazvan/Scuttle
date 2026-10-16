@@ -3,12 +3,14 @@ package scuttle.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -17,7 +19,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import scuttle.model.CoinAmount;
@@ -54,10 +55,14 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private final Map<Direction, BufferedImage> directionImageMap = new EnumMap<>(Direction.class);
     private final KeyHandler keyH;
     private final JPanel overlay;
-    private final JButton restartButton;
-    private final JButton menuButton;
+    private final JPanel pauseOverlay;
+    private final ImageButton restartButton;
+    private final ImageButton menuButton;
+    private final ImageButton pauseMenuButton;
+    private final ImageButton pauseButton;
     private final Runnable onMenu;
     private World world = new World();
+    private boolean paused;
 
     public GamePanel(Runnable onMenu) {
         this.onMenu = onMenu;
@@ -71,32 +76,124 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         this.setFocusable(true);
         this.setLayout(new BorderLayout());
 
-        overlay = new JPanel(new GridBagLayout());
+        restartButton = new ImageButton(
+                GuiAssets.button(GuiAssets.RESTART, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.RESTART, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.RESTART, GuiAssets.PRESSED));
+        menuButton = new ImageButton(
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.PRESSED));
+        restartButton.addActionListener(e -> restart());
+        menuButton.addActionListener(e -> returnToMenu());
+
+        overlay = new JPanel(new GridBagLayout()) {
+            @Override
+            public void doLayout() {
+                double scale = (Math.min(getWidth(), getHeight()) * 0.14) / GuiAssets.BUTTON_WIDTH;
+                restartButton.applyScale(scale);
+                menuButton.applyScale(scale);
+                super.doLayout();
+            }
+        };
         overlay.setOpaque(false);
         overlay.setVisible(false);
 
-        restartButton = new JButton("RESTART");
-        restartButton.setFocusable(false);
-        restartButton.addActionListener(e -> restart());
-
-        menuButton = new JButton("MENU");
-        menuButton.setFocusable(false);
-        menuButton.addActionListener(e -> returnToMenu());
+        JPanel spacerTop = new JPanel();
+        spacerTop.setOpaque(false);
+        JPanel spacerBottom = new JPanel();
+        spacerBottom.setOpaque(false);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.insets = new Insets(167, 8, 8, 8);
-        constraints.fill = GridBagConstraints.HORIZONTAL;
 
         constraints.gridy = 0;
-        overlay.add(restartButton, constraints);
-        constraints.gridy = 1;
+        constraints.weighty = 1;
+        constraints.fill = GridBagConstraints.BOTH;
+        overlay.add(spacerTop, constraints);
+
+        constraints.weighty = 0;
+        constraints.fill = GridBagConstraints.NONE;
         constraints.insets = new Insets(8, 8, 8, 8);
+        constraints.gridy = 1;
+        overlay.add(restartButton, constraints);
+        constraints.gridy = 2;
         overlay.add(menuButton, constraints);
-        this.add(overlay, BorderLayout.CENTER);
+
+        constraints.gridy = 3;
+        constraints.weighty = 0.5;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        overlay.add(spacerBottom, constraints);
+
+        pauseMenuButton = new ImageButton(
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.MENU, GuiAssets.PRESSED));
+        pauseMenuButton.addActionListener(e -> returnToMenu());
+
+        pauseOverlay = new JPanel(new GridBagLayout()) {
+            @Override
+            public void doLayout() {
+                double scale = (Math.min(getWidth(), getHeight()) * 0.2) / GuiAssets.BUTTON_WIDTH;
+                pauseMenuButton.applyScale(scale);
+                super.doLayout();
+            }
+        };
+        pauseOverlay.setOpaque(false);
+        pauseOverlay.setVisible(false);
+
+        JPanel pauseSpacerTop = new JPanel();
+        pauseSpacerTop.setOpaque(false);
+        JPanel pauseSpacerBottom = new JPanel();
+        pauseSpacerBottom.setOpaque(false);
+
+        GridBagConstraints pauseConstraints = new GridBagConstraints();
+        pauseConstraints.gridx = 0;
+        pauseConstraints.gridy = 0;
+        pauseConstraints.weighty = 1;
+        pauseConstraints.fill = GridBagConstraints.BOTH;
+        pauseOverlay.add(pauseSpacerTop, pauseConstraints);
+
+        pauseConstraints.weighty = 0;
+        pauseConstraints.fill = GridBagConstraints.NONE;
+        pauseConstraints.insets = new Insets(8, 8, 8, 8);
+        pauseConstraints.gridy = 1;
+        pauseOverlay.add(pauseMenuButton, pauseConstraints);
+
+        pauseConstraints.gridy = 2;
+        pauseConstraints.weighty = 0.6;
+        pauseConstraints.fill = GridBagConstraints.BOTH;
+        pauseConstraints.insets = new Insets(0, 0, 0, 0);
+        pauseOverlay.add(pauseSpacerBottom, pauseConstraints);
+
+        JPanel layers = new JPanel(null) {
+            @Override
+            public void doLayout() {
+                overlay.setBounds(0, 0, getWidth(), getHeight());
+                pauseOverlay.setBounds(0, 0, getWidth(), getHeight());
+            }
+        };
+        layers.setOpaque(false);
+        layers.add(overlay);
+        layers.add(pauseOverlay);
+        this.add(layers, BorderLayout.CENTER);
+
+        BufferedImage pauseIcon = GuiAssets.pauseIcon();
+        pauseButton = new ImageButton(pauseIcon, pauseIcon, pauseIcon);
+        pauseButton.applyScale(48.0 / pauseIcon.getWidth());
+        pauseButton.addActionListener(e -> togglePause());
+
+        JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 0));
+        hud.setOpaque(false);
+        hud.add(pauseButton);
+        this.add(hud, BorderLayout.NORTH);
     }
 
     public void startGame() {
+        paused = false;
+        pauseOverlay.setVisible(false);
+        pauseButton.setVisible(true);
         timer.start();
         this.requestFocusInWindow();
     }
@@ -135,6 +232,9 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     @Override
     public void move(Direction direction) {
+        if (paused) {
+            return;
+        }
         world.movePlayer(direction);
     }
 
@@ -142,13 +242,28 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     public void restart() {
         if (world.isGameOver()) {
             world = new World();
+            paused = false;
+            pauseOverlay.setVisible(false);
+            pauseButton.setVisible(true);
             overlay.setVisible(false);
             this.requestFocusInWindow();
         }
     }
 
+    @Override
+    public void togglePause() {
+        if (world.isGameOver()) {
+            return;
+        }
+        paused = !paused;
+        pauseOverlay.setVisible(paused);
+        this.requestFocusInWindow();
+    }
+
     private void returnToMenu() {
         timer.stop();
+        paused = false;
+        pauseOverlay.setVisible(false);
         world = new World();
         overlay.setVisible(false);
         onMenu.run();
@@ -156,8 +271,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        this.warningCounter++;
-        this.update();
+        if (!paused) {
+            this.warningCounter++;
+            this.update();
+        }
         this.repaint();
     }
 
@@ -234,7 +351,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         g.setColor(new Color(255, 200, 40));
         int pad = TILE_SIZE / 4;
         int size = TILE_SIZE / 2;
-        for (Position coin: world.getCoins()) {
+        for (Position coin : world.getCoins()) {
             g.fillOval(columnToX(coin.getColumn()) + pad, rowToY(coin.getRow()) + pad, size, size);
         }
     }
@@ -251,7 +368,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private void drawGameOver(Graphics2D g) {
         final String gameOverString = "GAME OVER";
 
-        //TEMP
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
@@ -264,9 +380,18 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
         g.setColor(Color.WHITE);
         int x = (SCREEN_WIDTH - g.getFontMetrics().stringWidth(scoreText)) / 2;
-        int y = SCREEN_HEIGHT / 2 + 40;  // below the centered title
+        int y = SCREEN_HEIGHT / 2 + 40;
         g.drawString(scoreText, x, y);
+    }
 
+    private void drawPaused(Graphics2D g) {
+        g.setColor(new Color(0, 0, 0, 90));
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
+        g.setColor(Color.WHITE);
+        final String pausedString = "PAUSED";
+        g.drawString(pausedString, (SCREEN_WIDTH - g.getFontMetrics().stringWidth(pausedString)) / 2,
+                SCREEN_HEIGHT / 2 + g.getFontMetrics().getAscent() / 2);
     }
 
     private void drawScore(Graphics2D g) {
@@ -282,15 +407,26 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2 = (Graphics2D) g;
-        drawLanes(g2);
-        drawCoins(g2);
-        drawPlayer(g2);
-        if (world.isGameOver()) {
-            drawGameOver(g2);
-        }
-        drawScore(g2);
+        Graphics2D g2 = (Graphics2D) g.create();
+        try {
+            double scaleX = getWidth() <= 0 ? 1 : (double) getWidth() / SCREEN_WIDTH;
+            double scaleY = getHeight() <= 0 ? 1 : (double) getHeight() / SCREEN_HEIGHT;
+            g2.scale(scaleX, scaleY);
+            g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
+            drawLanes(g2);
+            drawCoins(g2);
+            drawPlayer(g2);
+            if (world.isGameOver()) {
+                drawGameOver(g2);
+            } else if (paused) {
+                drawPaused(g2);
+            }
+            drawScore(g2);
+        } finally {
+            g2.dispose();
+        }
     }
 
     @Override
@@ -304,6 +440,11 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             HighScore.submit(world.getScore());
             CoinAmount.add(world.getCoinAmount());
             overlay.setVisible(world.isGameOver());
+            pauseButton.setVisible(!world.isGameOver());
+            if (world.isGameOver()) {
+                paused = false;
+                pauseOverlay.setVisible(false);
+            }
         }
     }
 

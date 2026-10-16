@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import static scuttle.model.Constants.CAMERA_OFFSET;
-import static scuttle.model.Constants.INITIAL_COINS;
+import static scuttle.model.Constants.COIN_GROUND_CHANCE;
 import static scuttle.model.Constants.LANES_AHEAD;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
@@ -35,8 +35,6 @@ public class World {
         this.coinsCollected = 0;
 
         generateAhead();
-
-        spawnCoins(INITIAL_COINS);
     }
 
     public boolean isGameOver() {
@@ -65,9 +63,11 @@ public class World {
     }
 
     private void generateAhead() {
+        int fromRow = lanes.size();
         while (lanes.size() < player.getPosition().getRow() + LANES_AHEAD) {
             lanes.add(generator.next());
         }
+        scatterCoinsOnRows(fromRow, lanes.size());
     }
 
     private boolean canMoveTo(Position p) {
@@ -136,10 +136,36 @@ public class World {
         checkDeath();
     }
 
+    private void scatterCoinsOnRows(int fromRow, int toRow) {
+        Position playerPosition = player.getPosition();
+        for (int row = fromRow; row < toRow; row++) {
+            Lane lane = lanes.get(row);
+            if (lane.getType() != LaneType.GROUND) {
+                continue;
+            }
+            if (random.nextInt(100) >= COIN_GROUND_CHANCE) {
+                continue;
+            }
+            List<Integer> columns = new ArrayList<>();
+            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+                if (lane.canStepOn(column)) {
+                    columns.add(column);
+                }
+            }
+            if (columns.isEmpty()) {
+                continue;
+            }
+            Position cell = new Position(columns.get(random.nextInt(columns.size())), row);
+            if (!cell.equals(playerPosition)) {
+                coins.add(cell);
+            }
+        }
+    }
+
     private void spawnCoins(int count) {
         List<Position> candidates = new ArrayList<>();
         Position playerPosition = player.getPosition();
-        for (int row = 0; row < lanes.size(); row++) {
+        for (int row = cameraRow; row < lanes.size(); row++) {
             Lane lane = lanes.get(row);
             if (lane.getType() != LaneType.GROUND) {
                 continue;

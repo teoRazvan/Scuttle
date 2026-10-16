@@ -22,47 +22,44 @@ public class MainMenu extends JPanel {
     private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE;
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE;
     private static final int MARGIN = 24;
-    
+
+    private final BufferedImage scene;
     private final BufferedImage background;
-    private final int crateX;
-    private final int crateY;
-    private final int crateWidth;
-    private final int crateHeight;
+    private final BufferedImage logo;
+    private final JPanel buttons;
+    private final ImageButton play;
+    private final ImageButton options;
+    private final ImageButton quit;
+
+    private int crateX;
+    private int crateY;
+    private int crateWidth;
+    private int crateHeight;
 
     public MainMenu(Runnable onPlay, Runnable onQuit) {
+        scene = GuiAssets.menuScene();
         background = GuiAssets.menuBackground();
-
-        double scale = Math.min(
-                (SCREEN_WIDTH - 2.0 * MARGIN) / background.getWidth(),
-                (SCREEN_HEIGHT - 2.0 * MARGIN) / background.getHeight());
-        crateWidth = (int) Math.round(background.getWidth() * scale);
-        crateHeight = (int) Math.round(background.getHeight() * scale);
-        crateX = (SCREEN_WIDTH - crateWidth) / 2;
-        crateY = (SCREEN_HEIGHT - crateHeight) / 2;
-
-        int buttonWidth = (int) Math.round(GuiAssets.BUTTON_WIDTH * scale);
-        int buttonHeight = (int) Math.round(GuiAssets.BUTTON_HEIGHT * scale);
+        logo = GuiAssets.menuLogo();
 
         setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         setBackground(Color.BLACK);
         setLayout(null);
 
-        JPanel buttons = new JPanel(new GridBagLayout());
+        buttons = new JPanel(new GridBagLayout());
         buttons.setOpaque(false);
-        int innerX = crateX + crateWidth / 8;
-        int innerY = crateY + crateHeight * 28 / 100;
-        int innerWidth = crateWidth * 3 / 4;
-        int innerHeight = crateHeight * 62 / 100;
-        buttons.setBounds(innerX, innerY, innerWidth, innerHeight);
 
-        ImageButton play = new ImageButton(
-                scaledButton(GuiAssets.PLAY, GuiAssets.IDLE, buttonWidth, buttonHeight),
-                scaledButton(GuiAssets.PLAY, GuiAssets.HOVER, buttonWidth, buttonHeight),
-                scaledButton(GuiAssets.PLAY, GuiAssets.PRESSED, buttonWidth, buttonHeight));
-        ImageButton quit = new ImageButton(
-                scaledButton(GuiAssets.QUIT, GuiAssets.IDLE, buttonWidth, buttonHeight),
-                scaledButton(GuiAssets.QUIT, GuiAssets.HOVER, buttonWidth, buttonHeight),
-                scaledButton(GuiAssets.QUIT, GuiAssets.PRESSED, buttonWidth, buttonHeight));
+        play = new ImageButton(
+                GuiAssets.button(GuiAssets.PLAY, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.PLAY, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.PLAY, GuiAssets.PRESSED));
+        options = new ImageButton(
+                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.PRESSED));
+        quit = new ImageButton(
+                GuiAssets.button(GuiAssets.QUIT, GuiAssets.IDLE),
+                GuiAssets.button(GuiAssets.QUIT, GuiAssets.HOVER),
+                GuiAssets.button(GuiAssets.QUIT, GuiAssets.PRESSED));
 
         play.addActionListener(e -> onPlay.run());
         quit.addActionListener(e -> onQuit.run());
@@ -74,12 +71,40 @@ public class MainMenu extends JPanel {
         constraints.gridy = 0;
         buttons.add(play, constraints);
         constraints.gridy = 1;
+        buttons.add(options, constraints);
+        constraints.gridy = 2;
         buttons.add(quit, constraints);
         add(buttons);
     }
 
-    private static BufferedImage scaledButton(int row, int col, int width, int height) {
-        return GuiAssets.scaleNearest(GuiAssets.button(row, col), width, height);
+    @Override
+    public void doLayout() {
+        layoutCrate();
+    }
+
+    private void layoutCrate() {
+        if (getWidth() <= 0 || getHeight() <= 0) {
+            return;
+        }
+        double scale = Math.min(
+                (getWidth() - 2.0 * MARGIN) / background.getWidth(),
+                (getHeight() - 2.0 * MARGIN) / background.getHeight());
+        crateWidth = (int) Math.round(background.getWidth() * scale);
+        crateHeight = (int) Math.round(background.getHeight() * scale);
+        crateX = (getWidth() - crateWidth) / 2;
+        crateY = (getHeight() - crateHeight) / 2;
+
+        int innerX = crateX + crateWidth / 8;
+        int innerY = crateY + crateHeight * 28 / 100;
+        int innerWidth = crateWidth * 3 / 4;
+        int innerHeight = crateHeight * 62 / 100;
+        buttons.setBounds(innerX, innerY, innerWidth, innerHeight);
+
+        double buttonScale = (crateWidth * 0.55) / GuiAssets.BUTTON_WIDTH;
+        play.applyScale(buttonScale);
+        options.applyScale(buttonScale);
+        quit.applyScale(buttonScale);
+        buttons.doLayout();
     }
 
     @Override
@@ -88,14 +113,30 @@ public class MainMenu extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        double sceneScale = Math.max(
+                (double) getWidth() / scene.getWidth(),
+                (double) getHeight() / scene.getHeight());
+        int sceneWidth = (int) Math.round(scene.getWidth() * sceneScale);
+        int sceneHeight = (int) Math.round(scene.getHeight() * sceneScale);
+        int sceneX = (getWidth() - sceneWidth) / 2;
+        int sceneY = (getHeight() - sceneHeight) / 2;
+        g2.drawImage(scene, sceneX, sceneY, sceneWidth, sceneHeight, null);
         g2.drawImage(background, crateX, crateY, crateWidth, crateHeight, null);
-        
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+
+        int logoWidth = Math.min(140, Math.max(80, getWidth() / 10));
+        int logoHeight = logoWidth * logo.getHeight() / logo.getWidth();
+        int logoX = getWidth() - logoWidth - 16;
+        int logoY = 12;
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2.drawImage(logo, logoX, logoY, logoWidth, logoHeight, null);
+
+        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
         g2.setColor(Color.WHITE);
-        g2.drawString("Best: " + HighScore.getBest(), 16, 28);
-        
-        g2.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 18));
+        g2.drawString("Best: " + HighScore.getBest(), 100, 28);
+
+        g2.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 22));
         g2.setColor(Color.YELLOW);
-        g2.drawString("Coins: " + CoinAmount.getAmount(), 14, 50);
+        g2.drawString("Coins: " + CoinAmount.getAmount(), 100, 50);
     }
 }

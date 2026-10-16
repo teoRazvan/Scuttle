@@ -8,4 +8,6 @@ public interface GameInput {
 
     void restart();
 
+    void togglePause();
+
 }
