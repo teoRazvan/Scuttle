@@ -1,6 +1,7 @@
 package scuttle.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
@@ -48,6 +49,10 @@ public class RaftLane extends Lane {
                 m.shift(direction);
             }
         }
+    }
+
+    public List<Mover> getRafts() {
+        return Collections.unmodifiableList(rafts);
     }
 
     @Override

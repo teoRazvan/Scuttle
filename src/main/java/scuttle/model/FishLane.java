@@ -51,4 +51,9 @@ public class FishLane extends Lane {
         return Collections.unmodifiableList(fishes);
     }
 
+    @Override
+    public int getDirection() {
+        return direction;
+    }
+
 }

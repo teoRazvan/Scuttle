@@ -79,7 +79,7 @@ final class GuiAssets {
         return scaled;
     }
 
-    private static BufferedImage load(String path) {
+    static BufferedImage load(String path) {
         try (InputStream in = GuiAssets.class.getResourceAsStream(path)) {
             if (in == null) {
                 throw new IllegalArgumentException("Missing resource " + path);
@@ -89,4 +89,5 @@ final class GuiAssets {
             throw new IllegalStateException("Could not load " + path, e);
         }
     }
+
 }

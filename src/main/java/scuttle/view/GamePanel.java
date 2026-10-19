@@ -14,11 +14,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import scuttle.model.CoinAmount;
@@ -26,11 +22,14 @@ import static scuttle.model.Constants.TICK_DELAY;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.Direction;
+import scuttle.model.FishLane;
+import scuttle.model.GroundLane;
 import scuttle.model.HighScore;
 import scuttle.model.Lane;
-import scuttle.model.LaneType;
+import scuttle.model.Mover;
 import scuttle.model.Player;
 import scuttle.model.Position;
+import scuttle.model.RaftLane;
 import scuttle.model.TorpedoLane;
 import scuttle.model.World;
 
@@ -49,10 +48,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE; // 768 pixels
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE; // 576 pixels
+    private static final Color UNDERWATER_TINT = new Color(0, 120, 170, 40);
 
     private int warningCounter = 0;
     private final Timer timer;
-    private final Map<Direction, BufferedImage> directionImageMap = new EnumMap<>(Direction.class);
     private final KeyHandler keyH;
     private final JPanel overlay;
     private final JPanel pauseOverlay;
@@ -68,7 +67,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         this.onMenu = onMenu;
         timer = new Timer(TICK_DELAY, this);
         keyH = new KeyHandler(this);
-        this.loadPlayerSprites();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);
@@ -198,44 +196,20 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         this.requestFocusInWindow();
     }
 
-    private void loadPlayerSprites() {
-
-        try {
-
-            BufferedImage up = ImageIO.read(
-                    getClass().getResourceAsStream("/player/Scuttle_up1.png"));
-            BufferedImage down = ImageIO.read(getClass().getResourceAsStream(
-                    "/player/Scuttle_up1.png"));
-            BufferedImage left = ImageIO.read(getClass().getResourceAsStream(
-                    "/player/Scuttle_up1.png"));
-            BufferedImage right = ImageIO.read(getClass().getResourceAsStream(
-                    "/player/Scuttle_up1.png"));
-            directionImageMap.put(Direction.UP, up);
-            directionImageMap.put(Direction.DOWN, down);
-            directionImageMap.put(Direction.RIGHT, right);
-            directionImageMap.put(Direction.LEFT, left);
-
-            // change these for all 8 sprites
-        } catch (IOException e) {
-
-            System.getLogger(GamePanel.class.getName()).log(System.Logger.Level.ERROR, (String) null,
-                    e);
-
-        } catch (IllegalArgumentException e) {
-
-            System.err.println("Could not find one or more image resources in /player/");
-
-            e.printStackTrace();
-
-        }
-    }
-
     @Override
     public void move(Direction direction) {
         if (paused) {
             return;
         }
         world.movePlayer(direction);
+    }
+
+    private void drawTile(Graphics2D g, BufferedImage image, int column, int row) {
+        g.drawImage(image, columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE, null);
+    }
+
+    private void drawTileMirrored(Graphics2D g, BufferedImage image, int column, int row) {
+        g.drawImage(image, columnToX(column) + TILE_SIZE, rowToY(row), -TILE_SIZE, TILE_SIZE, null);
     }
 
     @Override
@@ -278,26 +252,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         this.repaint();
     }
 
-    private Color laneColor(LaneType t) {
-        switch (t) {
-            case LaneType.FISH -> {
-                return new Color(90, 160, 210);
-            }
-            case LaneType.GROUND -> {
-                return new Color(230, 205, 150);
-            }
-            case LaneType.RAFT -> {
-                return new Color(40, 110, 180);
-            }
-            case LaneType.TORPEDO -> {
-                return new Color(20, 40, 90);
-            }
-            default -> {
-                return null;
-            }
-        }
-    }
-
     private int rowToY(int row) {
         return (VISIBLE_ROWS - 1 - (row - world.getCameraRow())) * TILE_SIZE;
     }
@@ -306,63 +260,139 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         return column * TILE_SIZE;
     }
 
+    private void drawGroundLane(GroundLane lane, Graphics2D g, int row) {
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+            drawTile(g, variant(Sprites.SAND, column, row), column, row);
+            if (!lane.canStepOn(column)) {
+                drawTile(g, variant(Sprites.CORAL, column, row), column, row);
+            }
+
+        }
+    }
+
+    private void drawTint(Graphics2D g) {
+        g.setColor(UNDERWATER_TINT);
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    }
+
+    private BufferedImage getFishSprite(int i, int length, int direction) {
+        if (length == 1) {
+            return Sprites.FISH_SINGLE;
+        } else {
+            if (direction == 1) {
+                if (i == length - 1) {
+                    return Sprites.FISH_HEAD;
+                } else if (i == 0) {
+                    return Sprites.FISH_TAIL;
+                } else {
+                    return Sprites.FISH_BODY;
+                }
+            } else {
+                if (i == 0) {
+                    return Sprites.FISH_HEAD;
+                } else if (i == length - 1) {
+                    return Sprites.FISH_TAIL;
+                } else {
+                    return Sprites.FISH_BODY;
+                }
+            }
+        }
+    }
+
+    private void drawFishLane(FishLane lane, Graphics2D g, int row) {
+        System.out.println(lane.getDirection());
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+            drawTile(g, variant(Sprites.TATTERED, column, row), column, row);
+        }
+        for (Mover m: lane.getFishes()) {
+            for (int i = 0; i < m.getLength(); i++) {
+                if (lane.getDirection() == 1) {
+                    drawTile(g, getFishSprite(i, m.getLength(), lane.getDirection()),
+                            m.getStartCell() + i, row);
+                } else {
+                    drawTileMirrored(g, getFishSprite(i, m.getLength(), lane.getDirection()),
+                            m.getStartCell() + i, row);
+                }
+            }
+        }
+    }
+
+    private void drawRaftLane(RaftLane lane, Graphics2D g, int row) {
+        System.out.println(lane.getDirection());
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+            drawTile(g, variant(Sprites.CHASM, column, row), column, row);
+        }
+        for (Mover m: lane.getRafts()) {
+            for (int i = 0; i < m.getLength(); i++) {
+                if (i == 0) {
+                    drawTile(g, Sprites.JELLY_LEFT, m.getStartCell() + i, row);
+                } else if (i == m.getLength() - 1) {
+                    drawTile(g, Sprites.JELLY_RIGHT, m.getStartCell() + i, row);
+                } else {
+                    drawTile(g, Sprites.JELLY_MID, m.getStartCell() + i, row);
+                }
+            }
+        }
+    }
+
+    private void drawTorpedoLane(TorpedoLane lane, Graphics2D g, int row) {
+        System.out.println(lane.getDirection());
+        for (int column = 1; column < VISIBLE_COLUMNS; column++) {
+            if (((TorpedoLane) lane).isWarning() && (warningCounter / 10) % 2 == 0) {
+                drawTile(g, Sprites.TORPEDO_HAZARD, column, row);
+            } else if (((TorpedoLane) lane).isFiring()) {
+                drawTile(g, Sprites.TORPEDO_BLAST[Math.floorMod(column + warningCounter / 3, 2)],
+                        column, row);
+            } else {
+                drawTile(g, variant(Sprites.TORPEDO_TRACK, column, row), column, row);
+            }
+        }
+        drawTile(g, variant(Sprites.TORPEDO_TRACK, 0, row), 0, row);
+        drawTile(g, Sprites.TORPEDO_LAUNCHER, 0, row);
+
+    }
+
+    private BufferedImage variant(BufferedImage[] variants, int column, int row) {
+        long randomHash = column * 73856093 ^ row * 19349663;
+        return variants[Math.floorMod(randomHash, variants.length)];
+    }
+
     private void drawLanes(Graphics2D g) {
         List<Lane> lanes = world.getLanes();
 
         for (int row = world.getCameraRow(); row < Math.min(VISIBLE_ROWS + world.getCameraRow(),
                 lanes.size()); row++) {
             Lane lane = lanes.get(row);
-            g.setColor(laneColor(lane.getType()));
-            g.fillRect(columnToX(0), rowToY(row), SCREEN_WIDTH, TILE_SIZE);
-            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-                if (!lane.canStepOn(column)) {
-                    g.setColor(new Color(240, 110, 110));
-                    g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
+            switch (lane) {
+                case GroundLane ground -> {
+                    drawGroundLane(ground, g, row);
                 }
-                if (lane.getType() == LaneType.FISH) {
-                    if (lane.isDeadly(column)) {
-                        g.setColor(new Color(255, 150, 40));
-                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
-                    }
-                } else if (lane.getType() == LaneType.RAFT) {
-                    if (!lane.isDeadly(column)) {
-                        g.setColor(new Color(140, 90, 50));
-                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
-                    }
+                case FishLane fish -> {
+                    drawFishLane(fish, g, row);
                 }
-                if (lane instanceof TorpedoLane) {
-                    if (((TorpedoLane) lane).isWarning() && (warningCounter / 10) % 2 == 0) {
-                        g.setColor(new Color(255, 40, 40, 110));
-                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
-                    } else if (((TorpedoLane) lane).isFiring()) {
-                        g.setColor(new Color(60, 60, 70));
-                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
-                    } else {
-                        g.setColor(new Color(20, 40, 90));
-                        g.fillRect(columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE);
-                    }
+                case RaftLane raft -> {
+                    drawRaftLane(raft, g, row);
                 }
-
+                case TorpedoLane torpedo -> {
+                    drawTorpedoLane(torpedo, g, row);
+                }
+                default ->
+                    throw new IllegalStateException("Unexpected value: " + lane);
             }
         }
     }
 
     private void drawCoins(Graphics2D g) {
-        g.setColor(new Color(255, 200, 40));
-        int pad = TILE_SIZE / 4;
-        int size = TILE_SIZE / 2;
-        for (Position coin : world.getCoins()) {
-            g.fillOval(columnToX(coin.getColumn()) + pad, rowToY(coin.getRow()) + pad, size, size);
+
+        for (Position coin: world.getCoins()) {
+            drawTile(g, Sprites.COIN, coin.getColumn(), coin.getRow());
         }
     }
 
     private void drawPlayer(Graphics2D g) {
-
         Player player = world.getPlayer();
-        BufferedImage image = directionImageMap.get(player.getFacing());
-        int posX = columnToX(player.getPosition().getColumn());
-        int posY = rowToY(player.getPosition().getRow());
-        g.drawImage(image, posX, posY, TILE_SIZE, TILE_SIZE, null);
+        drawTile(g, Sprites.crab(player.getFacing()), player.getPosition().getColumn(),
+                player.getPosition().getRow());
     }
 
     private void drawGameOver(Graphics2D g) {
@@ -418,6 +448,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             drawLanes(g2);
             drawCoins(g2);
             drawPlayer(g2);
+            drawTint(g2);
             if (world.isGameOver()) {
                 drawGameOver(g2);
             } else if (paused) {
