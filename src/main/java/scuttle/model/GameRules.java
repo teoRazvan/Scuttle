@@ -10,7 +10,7 @@ public final class GameRules {
 
     }
     //difficulty max lane
-    static final int DIFFICULTY_RAMP_LANES = 0;
+    static final int DIFFICULTY_RAMP_LANES = 300;
 
     //easiest ruleset
     static final int MAX_DANGER_STREAK = 4;

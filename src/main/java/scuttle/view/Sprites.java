@@ -48,6 +48,8 @@ public final class Sprites {
     static final BufferedImage EDGE_CORNER_RIGHT = GuiAssets.load(
             "/sprites/edge_corner_right.png");
 
+    static final BufferedImage HUD_PANEL = GuiAssets.load("/sprites/hud_panel.png");
+
     private Sprites() {
     }
 

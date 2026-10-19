@@ -4,36 +4,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import scuttle.model.CoinAmount;
 import static scuttle.model.Constants.TICK_DELAY;
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
-import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.Direction;
-import scuttle.model.FishLane;
-import scuttle.model.GroundLane;
 import scuttle.model.HighScore;
-import scuttle.model.Lane;
-import scuttle.model.Mover;
-import scuttle.model.Player;
-import scuttle.model.Position;
-import scuttle.model.RaftLane;
-import scuttle.model.TorpedoLane;
-import static scuttle.model.TorpedoLane.LAUNCHER_COLUMN;
 import scuttle.model.World;
+import static scuttle.view.ViewConstants.*;
 
 /**
  *
@@ -43,20 +30,7 @@ import scuttle.model.World;
  */
 public class GamePanel extends JPanel implements ActionListener, GameInput {
 
-    private static final int ORIGINAL_TILE_SIZE = 16; // Sprite size in pixels
-    private static final int SCALE = 3;// How much sprites are enlarged
-
-    private static final int TILE_SIZE = ORIGINAL_TILE_SIZE * SCALE; //48x48 pixels tile
-
-    private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE; // 768 pixels
-    private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE; // 576 pixels
-    private static final Color UNDERWATER_TINT = new Color(0, 120, 170, 40);
-    ;
-    private static final Color VIGNETTE_EDGE = new Color(0, 15, 45, 170);
-    private static final Color VIGNETTE_CENTER = new Color(0, 15, 45, 0);
-    private final RadialGradientPaint vignette;
-
-    private int warningCounter = 0;
+    private int frameCounter = 0;
     private final Timer timer;
     private final KeyHandler keyH;
     private final JPanel overlay;
@@ -68,6 +42,9 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private final Runnable onMenu;
     private World world = new World();
     private boolean paused;
+
+    private final WorldRenderer worldRenderer = new WorldRenderer();
+    private final HudRenderer hudRenderer = new HudRenderer();
 
     public GamePanel(Runnable onMenu) {
         this.onMenu = onMenu;
@@ -193,8 +170,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         hud.add(pauseButton);
         this.add(hud, BorderLayout.NORTH);
 
-        vignette = new RadialGradientPaint(SCREEN_WIDTH / 2f, SCREEN_HEIGHT / 2f, SCREEN_WIDTH
-                * 0.6f, new float[]{0.35f, 1f}, new Color[]{VIGNETTE_CENTER, VIGNETTE_EDGE});
     }
 
     public void startGame() {
@@ -211,14 +186,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             return;
         }
         world.movePlayer(direction);
-    }
-
-    private void drawTile(Graphics2D g, BufferedImage image, int column, int row) {
-        g.drawImage(image, columnToX(column), rowToY(row), TILE_SIZE, TILE_SIZE, null);
-    }
-
-    private void drawTileMirrored(Graphics2D g, BufferedImage image, int column, int row) {
-        g.drawImage(image, columnToX(column) + TILE_SIZE, rowToY(row), -TILE_SIZE, TILE_SIZE, null);
     }
 
     @Override
@@ -255,227 +222,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (!paused) {
-            this.warningCounter++;
+            this.frameCounter++;
             this.update();
         }
         this.repaint();
-    }
-
-    private int rowToY(int row) {
-        return (VISIBLE_ROWS - 1 - (row - world.getCameraRow())) * TILE_SIZE;
-    }
-
-    private int columnToX(int column) {
-        return column * TILE_SIZE;
-    }
-
-    private void drawGroundLane(GroundLane lane, Graphics2D g, int row) {
-        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-            drawTile(g, variant(Sprites.SAND, column, row), column, row);
-            if (!lane.canStepOn(column)) {
-                drawTile(g, variant(Sprites.CORAL, column, row), column, row);
-            }
-
-        }
-    }
-
-    private void drawTint(Graphics2D g) {
-        g.setColor(UNDERWATER_TINT);
-        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        g.setPaint(vignette);
-        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    }
-
-    private BufferedImage getFishSprite(int i, int length, int direction) {
-        if (length == 1) {
-            return Sprites.FISH_SINGLE;
-        } else {
-            if (direction == 1) {
-                if (i == length - 1) {
-                    return Sprites.FISH_HEAD;
-                } else if (i == 0) {
-                    return Sprites.FISH_TAIL;
-                } else {
-                    return Sprites.FISH_BODY;
-                }
-            } else {
-                if (i == 0) {
-                    return Sprites.FISH_HEAD;
-                } else if (i == length - 1) {
-                    return Sprites.FISH_TAIL;
-                } else {
-                    return Sprites.FISH_BODY;
-                }
-            }
-        }
-    }
-
-    private void drawFishLane(FishLane lane, Graphics2D g, int row) {
-        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-            drawTile(g, variant(Sprites.TATTERED, column, row), column, row);
-        }
-        for (Mover m: lane.getFishes()) {
-            for (int i = 0; i < m.getLength(); i++) {
-                if (lane.getDirection() == 1) {
-                    drawTile(g, getFishSprite(i, m.getLength(), lane.getDirection()),
-                            m.getStartCell() + i, row);
-                } else {
-                    drawTileMirrored(g, getFishSprite(i, m.getLength(), lane.getDirection()),
-                            m.getStartCell() + i, row);
-                }
-            }
-        }
-    }
-
-    private void drawRaftLane(RaftLane lane, Graphics2D g, int row) {
-        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-            drawTile(g, variant(Sprites.CHASM, column, row), column, row);
-        }
-        for (Mover m: lane.getRafts()) {
-            for (int i = 0; i < m.getLength(); i++) {
-                if (i == 0) {
-                    drawTile(g, Sprites.JELLY_LEFT, m.getStartCell() + i, row);
-                } else if (i == m.getLength() - 1) {
-                    drawTile(g, Sprites.JELLY_RIGHT, m.getStartCell() + i, row);
-                } else {
-                    drawTile(g, Sprites.JELLY_MID, m.getStartCell() + i, row);
-                }
-            }
-        }
-    }
-
-    private void drawLauncher(Graphics2D g, TorpedoLane lane, int row) {
-        int frame = (warningCounter / 3) % 2;
-        if (lane.isFiring()) {
-            drawTile(g, Sprites.LAUNCHER_FIRE[frame], LAUNCHER_COLUMN, row);
-            drawTile(g, Sprites.TORPEDO_BLAST_START[frame], LAUNCHER_COLUMN, row);
-        } else if (lane.isWarning()) {
-            drawTile(g, Sprites.LAUNCHER_FIRE[(warningCounter / 3) % 3], LAUNCHER_COLUMN, row);
-
-        } else {
-            drawTile(g, Sprites.TORPEDO_LAUNCHER, LAUNCHER_COLUMN, row);
-
-        }
-    }
-
-    private void drawTorpedoLane(TorpedoLane lane, Graphics2D g, int row) {
-        int frame = (warningCounter / 3) % 2;
-        for (int column = 1; column < VISIBLE_COLUMNS; column++) {
-            drawTile(g, variant(Sprites.TORPEDO_TRACK, column, row), column, row);
-            if (lane.isWarning() && (warningCounter / 10) % 2 == 0) {
-                drawTile(g, Sprites.TORPEDO_HAZARD, column, row);
-            } else if (lane.isFiring()) {
-                drawTile(g, Sprites.TORPEDO_BLAST[frame],
-                        column, row);
-            }
-        }
-        drawTile(g, variant(Sprites.TORPEDO_TRACK, 0, row), 0, row);
-    }
-
-    private BufferedImage variant(BufferedImage[] variants, int column, int row) {
-        long randomHash = column * 73856093 ^ row * 19349663;
-        return variants[Math.floorMod(randomHash, variants.length)];
-    }
-
-    private void drawEdges(Graphics2D g, int row) {
-        if (row == world.getCameraRow()) {
-            drawTile(g, Sprites.EDGE_CORNER_LEFT, 0, row);
-            drawTile(g, Sprites.EDGE_CORNER_RIGHT, VISIBLE_COLUMNS - 1, row);
-            for (int column = 1; column < VISIBLE_COLUMNS - 1; column++) {
-                drawTile(g, variant(Sprites.EDGE_BOTTOM, column, row), column, row);
-            }
-        } else {
-            drawTile(g, variant(Sprites.EDGE_LEFT, 0, row), 0, row);
-            drawTile(g, variant(Sprites.EDGE_RIGHT, VISIBLE_COLUMNS - 1, row), VISIBLE_COLUMNS - 1,
-                    row);
-        }
-    }
-
-    private void drawLanes(Graphics2D g) {
-        List<Lane> lanes = world.getLanes();
-
-        for (int row = world.getCameraRow(); row < Math.min(VISIBLE_ROWS + world.getCameraRow(),
-                lanes.size()); row++) {
-            Lane lane = lanes.get(row);
-            switch (lane) {
-                case GroundLane ground -> {
-                    drawGroundLane(ground, g, row);
-                }
-                case FishLane fish -> {
-                    drawFishLane(fish, g, row);
-                }
-                case RaftLane raft -> {
-                    drawRaftLane(raft, g, row);
-                }
-                case TorpedoLane torpedo -> {
-                    drawTorpedoLane(torpedo, g, row);
-                }
-                default ->
-                    throw new IllegalStateException("Unexpected value: " + lane);
-            }
-            drawEdges(g, row);
-            if (lane instanceof TorpedoLane) {
-                drawLauncher(g, (TorpedoLane) lane, row);
-
-            }
-        }
-    }
-
-    private void drawCoins(Graphics2D g) {
-
-        for (Position coin: world.getCoins()) {
-            drawTile(g, Sprites.COIN, coin.getColumn(), coin.getRow());
-        }
-    }
-
-    private void drawPlayer(Graphics2D g) {
-        Player player = world.getPlayer();
-        if (world.isGameOver()) {
-            drawTile(g, Sprites.CRAB_DEAD, player.getPosition().getColumn(),
-                    player.getPosition().getRow());
-        } else {
-            drawTile(g, Sprites.crab(player.getFacing()), player.getPosition().getColumn(),
-                    player.getPosition().getRow());
-        }
-    }
-
-    private void drawGameOver(Graphics2D g) {
-        final String gameOverString = "GAME OVER";
-
-        g.setColor(new Color(0, 0, 0, 150));
-        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        g.setColor(new Color(255, 0, 0, 255));
-        g.drawString(gameOverString, (SCREEN_WIDTH - g.getFontMetrics().stringWidth(gameOverString))
-                / 2, (SCREEN_HEIGHT - g.getFontMetrics().getHeight()) / 2
-                + g.getFontMetrics().getAscent());
-
-        String scoreText = "Score: " + world.getScore();
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
-        g.setColor(Color.WHITE);
-        int x = (SCREEN_WIDTH - g.getFontMetrics().stringWidth(scoreText)) / 2;
-        int y = SCREEN_HEIGHT / 2 + 40;
-        g.drawString(scoreText, x, y);
-    }
-
-    private void drawPaused(Graphics2D g) {
-        g.setColor(new Color(0, 0, 0, 90));
-        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 48));
-        g.setColor(Color.WHITE);
-        final String pausedString = "PAUSED";
-        g.drawString(pausedString, (SCREEN_WIDTH - g.getFontMetrics().stringWidth(pausedString)) / 2,
-                SCREEN_HEIGHT / 2 + g.getFontMetrics().getAscent() / 2);
-    }
-
-    private void drawScore(Graphics2D g) {
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
-        g.setColor(Color.WHITE);
-        g.drawString("Score: " + world.getScore(), 16, 28);
-
-        g.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 20));
-        g.setColor(Color.YELLOW);
-        g.drawString("Coins: " + world.getCoinAmount(), 16, 52);
     }
 
     @Override
@@ -489,16 +239,13 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-            drawLanes(g2);
-            drawCoins(g2);
-            drawPlayer(g2);
-            drawTint(g2);
+            worldRenderer.draw(g2, world, frameCounter);
             if (world.isGameOver()) {
-                drawGameOver(g2);
+                hudRenderer.drawGameOver(g2, world.getScore());
             } else if (paused) {
-                drawPaused(g2);
+                hudRenderer.drawPaused(g2);
             }
-            drawScore(g2);
+            hudRenderer.drawScore(g2, world.getScore(), world.getCoinAmount());
         } finally {
             g2.dispose();
         }
