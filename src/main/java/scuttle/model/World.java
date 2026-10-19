@@ -89,20 +89,7 @@ public class World {
         if (gameOver) {
             return;
         }
-        Position newPosition = switch (movementDirection) {
-            case DOWN ->
-                new Position(player.getPosition().getColumn(),
-                player.getPosition().getRow() - 1);
-            case UP ->
-                new Position(player.getPosition().getColumn(),
-                player.getPosition().getRow() + 1);
-            case LEFT ->
-                new Position(player.getPosition().getColumn() - 1,
-                player.getPosition().getRow());
-            case RIGHT ->
-                new Position(player.getPosition().getColumn() + 1,
-                player.getPosition().getRow());
-        };
+        Position newPosition = player.getPosition().step(movementDirection);
 
         if (canMoveTo(newPosition)) {
             generateAhead();

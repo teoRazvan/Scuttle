@@ -12,6 +12,23 @@ public final class Position {
         this.row = row;
     }
 
+    public Position step(Direction direction) {
+        return switch (direction) {
+            case DOWN ->
+                new Position(this.getColumn(),
+                this.getRow() - 1);
+            case UP ->
+                new Position(this.getColumn(),
+                this.getRow() + 1);
+            case LEFT ->
+                new Position(this.getColumn() - 1,
+                this.getRow());
+            case RIGHT ->
+                new Position(this.getColumn() + 1,
+                this.getRow());
+        };
+    }
+
     public int getRow() {
         return row;
     }

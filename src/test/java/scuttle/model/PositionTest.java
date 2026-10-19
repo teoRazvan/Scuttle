@@ -60,4 +60,21 @@ public class PositionTest {
         assertFalse(position.equals(null));
     }
 
+    @Test
+    public void stepWorks() {
+        int column = 4;
+        int row = 5;
+        Position position = new Position(column, row);
+
+        Position up = new Position(column, row + 1);
+        Position down = new Position(column, row - 1);
+        Position left = new Position(column - 1, row);
+        Position right = new Position(column + 1, row);
+
+        assertEquals(position.step(Direction.DOWN), down);
+        assertEquals(position.step(Direction.UP), up);
+        assertEquals(position.step(Direction.LEFT), left);
+        assertEquals(position.step(Direction.RIGHT), right);
+    }
+
 }

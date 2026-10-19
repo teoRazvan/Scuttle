@@ -1,45 +1,77 @@
 package scuttle.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import static scuttle.model.Constants.HIDDEN_MARGIN;
 import static scuttle.model.Constants.LANE_WIDTH;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
 public class LaneGenerator {
 
-    private static final int CORAL_CHANCE = 25;
+    private static final int CORAL_CHANCE = 30;
     private static final int MAX_DANGER_STREAK = 4;
+    private static final int MAX_GORUND_ATTEMPTS = 10;
 
+    private Lane previousLane = null;
+    private Set<Position> frontier = new HashSet<>();
     private final Random random;
     private int lanesMade;
     private LaneType previousType;
-    private boolean previousHadCoral = false;
     private int previousDirection = 1;
     private int dangerStreak;
 
     public LaneGenerator() {
+        this(new Random());
+    }
+
+    public LaneGenerator(Random random) {
+        this.random = random;
         this.lanesMade = 0;
-        this.random = new Random();
         this.dangerStreak = 0;
+    }
+
+    private Set<Position> computeFrontier(Lane newLane) {
+        if (previousLane == null) {
+            List<Position> start = new ArrayList<>();
+            for (int i = 0; i < VISIBLE_COLUMNS; i++) {
+                start.add(new Position(i, 0));
+            }
+            return Reachability.reachable(List.of(newLane), start, 0, 1);
+        }
+        Set<Position> reachable
+                = Reachability.reachable(List.of(previousLane, newLane), frontier, 0, 2);
+        Set<Position> newFrontier = new HashSet<>();
+        for (Position p: reachable) {
+            if (p.getRow() == 1) {
+                newFrontier.add(new Position(p.getColumn(), 0));
+            }
+        }
+        return newFrontier;
+    }
+
+    private GroundLane makePlainCround() {
+        CellType[] cellType = new CellType[VISIBLE_COLUMNS];
+        for (int i = 0; i < cellType.length; i++) {
+            cellType[i] = CellType.FREE;
+        }
+        return new GroundLane(cellType);
     }
 
     public Lane next() {
         Lane lane = null;
         lanesMade++;
         if (lanesMade < 5) {
-            CellType[] cellType = new CellType[VISIBLE_COLUMNS];
-            for (int i = 0; i < cellType.length; i++) {
-                cellType[i] = CellType.FREE;
-            }
-            lane = new GroundLane(cellType);
+
+            lane = makePlainCround();
         } else if (dangerStreak >= MAX_DANGER_STREAK) {
-            lane = makeGround();
+            lane = makeReachableGround();
         } else {
             switch (pickType()) {
                 case GROUND:
-                    lane = makeGround();
+                    lane = makeReachableGround();
                     break;
                 case FISH:
                     lane = makeFish();
@@ -58,6 +90,10 @@ public class LaneGenerator {
         } else {
             dangerStreak++;
         }
+
+        Set<Position> newFrontier = computeFrontier(lane);
+        previousLane = lane;
+        frontier = newFrontier;
         return lane;
 
     }
@@ -104,23 +140,28 @@ public class LaneGenerator {
         return moverList;
     }
 
+    private GroundLane makeReachableGround() {
+        Lane candidate;
+        for (int i = 0; i < MAX_GORUND_ATTEMPTS; i++) {
+            candidate = makeGround();
+            if (!computeFrontier(candidate).isEmpty()) {
+                return (GroundLane) candidate;
+            }
+        }
+        candidate = makePlainCround();
+        return (GroundLane) candidate;
+    }
+
     private Lane makeGround() {
         Lane groundLane;
         CellType[] cellType = new CellType[VISIBLE_COLUMNS];
-        if (previousHadCoral) {
-            for (int i = 0; i < cellType.length; i++) {
+
+        for (int i = 0; i < cellType.length; i++) {
+            int randomSeed = random.nextInt(100);
+            if (randomSeed < CORAL_CHANCE) {
+                cellType[i] = CellType.CORAL;
+            } else {
                 cellType[i] = CellType.FREE;
-            }
-            previousHadCoral = false;
-        } else {
-            previousHadCoral = true;
-            for (int i = 0; i < cellType.length; i++) {
-                int randomSeed = random.nextInt(100);
-                if (randomSeed < CORAL_CHANCE) {
-                    cellType[i] = CellType.CORAL;
-                } else {
-                    cellType[i] = CellType.FREE;
-                }
             }
         }
         groundLane = new GroundLane(cellType);
