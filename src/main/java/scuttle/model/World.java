@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import static scuttle.model.Constants.CAMERA_OFFSET;
-import static scuttle.model.Constants.COIN_GROUND_CHANCE;
 import static scuttle.model.Constants.LANES_AHEAD;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.GameRules.COIN_GROUND_CHANCE;
 
 public class World {
 
@@ -52,6 +52,10 @@ public class World {
 
     public int getScore() {
         return score;
+    }
+
+    private Set<Position> reachableCells() {
+        return Reachability.reachable(lanes, List.of(player.getPosition()), cameraRow, lanes.size());
     }
 
     public int getCoinAmount() {
@@ -125,6 +129,8 @@ public class World {
 
     private void scatterCoinsOnRows(int fromRow, int toRow) {
         Position playerPosition = player.getPosition();
+        Set<Position> reachable = reachableCells();
+
         for (int row = fromRow; row < toRow; row++) {
             Lane lane = lanes.get(row);
             if (lane.getType() != LaneType.GROUND) {
@@ -135,7 +141,7 @@ public class World {
             }
             List<Integer> columns = new ArrayList<>();
             for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-                if (lane.canStepOn(column)) {
+                if (reachable.contains(new Position(column, row))) {
                     columns.add(column);
                 }
             }
@@ -152,13 +158,15 @@ public class World {
     private void spawnCoins(int count) {
         List<Position> candidates = new ArrayList<>();
         Position playerPosition = player.getPosition();
+        Set<Position> reachable = reachableCells();
+
         for (int row = cameraRow; row < lanes.size(); row++) {
             Lane lane = lanes.get(row);
             if (lane.getType() != LaneType.GROUND) {
                 continue;
             }
             for (int column = 0; column < VISIBLE_COLUMNS; column++) {
-                if (!lane.canStepOn(column)) {
+                if (!reachable.contains(new Position(column, row))) {
                     continue;
                 }
                 Position cell = new Position(column, row);

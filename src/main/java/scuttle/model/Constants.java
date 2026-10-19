@@ -17,8 +17,6 @@ public final class Constants {
     public static final int LANES_AHEAD = 24;
     //Updates happen once after each delay to ensure a stable FPS
     public static final int TICK_DELAY = 16;
-    // Chance that a newly generated ground lane gets a coin
-    public static final int COIN_GROUND_CHANCE = 50;
 
     public static final int CAMERA_OFFSET = 4;
 

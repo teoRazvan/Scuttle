@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +51,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE; // 768 pixels
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE; // 576 pixels
     private static final Color UNDERWATER_TINT = new Color(0, 120, 170, 40);
+    ;
+    private static final Color VIGNETTE_EDGE = new Color(0, 15, 45, 170);
+    private static final Color VIGNETTE_CENTER = new Color(0, 15, 45, 0);
+    private final RadialGradientPaint vignette;
 
     private int warningCounter = 0;
     private final Timer timer;
@@ -187,6 +192,9 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         hud.setOpaque(false);
         hud.add(pauseButton);
         this.add(hud, BorderLayout.NORTH);
+
+        vignette = new RadialGradientPaint(SCREEN_WIDTH / 2f, SCREEN_HEIGHT / 2f, SCREEN_WIDTH
+                * 0.6f, new float[]{0.35f, 1f}, new Color[]{VIGNETTE_CENTER, VIGNETTE_EDGE});
     }
 
     public void startGame() {
@@ -273,6 +281,8 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     private void drawTint(Graphics2D g) {
         g.setColor(UNDERWATER_TINT);
+        g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        g.setPaint(vignette);
         g.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
 
@@ -420,8 +430,13 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
 
     private void drawPlayer(Graphics2D g) {
         Player player = world.getPlayer();
-        drawTile(g, Sprites.crab(player.getFacing()), player.getPosition().getColumn(),
-                player.getPosition().getRow());
+        if (world.isGameOver()) {
+            drawTile(g, Sprites.CRAB_DEAD, player.getPosition().getColumn(),
+                    player.getPosition().getRow());
+        } else {
+            drawTile(g, Sprites.crab(player.getFacing()), player.getPosition().getColumn(),
+                    player.getPosition().getRow());
+        }
     }
 
     private void drawGameOver(Graphics2D g) {
@@ -479,8 +494,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             drawPlayer(g2);
             drawTint(g2);
             if (world.isGameOver()) {
-                drawTile(g2, Sprites.CRAB_DEAD, world.getPlayer().getPosition().getColumn(),
-                        world.getPlayer().getPosition().getRow());
                 drawGameOver(g2);
             } else if (paused) {
                 drawPaused(g2);

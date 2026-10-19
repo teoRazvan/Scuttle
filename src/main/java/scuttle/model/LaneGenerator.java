@@ -8,13 +8,9 @@ import java.util.Set;
 import static scuttle.model.Constants.HIDDEN_MARGIN;
 import static scuttle.model.Constants.LANE_WIDTH;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.GameRules.*;
 
 public class LaneGenerator {
-
-    private static final int CORAL_CHANCE = 30;
-    static final int MAX_DANGER_STREAK = 4;
-    private static final int MAX_GORUND_ATTEMPTS = 10;
-    static final int SAFE_START_LANES = 4;
 
     private Lane previousLane = null;
     private Set<Position> frontier = new HashSet<>();
@@ -32,6 +28,14 @@ public class LaneGenerator {
         this.random = random;
         this.lanesMade = 0;
         this.dangerStreak = 0;
+    }
+
+    double difficulty() {
+        return Math.min(1.0, lanesMade / (double) DIFFICULTY_RAMP_LANES);
+    }
+
+    int scaled(int easy, int hard) {
+        return (int) Math.round(easy + (hard - easy) * difficulty());
     }
 
     private Set<Position> computeFrontier(Lane newLane) {
@@ -117,12 +121,18 @@ public class LaneGenerator {
     }
 
     private LaneType pickType() {
-        int randomSeed = random.nextInt(100);
-        if (randomSeed < 40) {
+        int groundWeight = scaled(GROUND_WEIGHT_EASY, GROUND_WEIGHT_HARD);
+        int fishWeight = scaled(FISH_WEIGHT_EASY, FISH_WEIGHT_HARD);
+        int raftWeight = scaled(RAFT_WEIGHT_EASY, RAFT_WEIGHT_HARD);
+        int torpedoWeight = scaled(TORPEDO_WEIGHT_EASY, TORPEDO_WEIGHT_HARD);
+        int totalWeight = groundWeight + fishWeight + raftWeight + torpedoWeight;
+        int randomSeed = random.nextInt(totalWeight);
+
+        if (randomSeed < groundWeight) {
             return LaneType.GROUND;
-        } else if (randomSeed < 70) {
+        } else if (randomSeed < fishWeight + groundWeight) {
             return LaneType.FISH;
-        } else if (randomSeed < 90) {
+        } else if (randomSeed < raftWeight + fishWeight + groundWeight) {
             return LaneType.RAFT;
         } else {
             return LaneType.TORPEDO;
@@ -143,7 +153,7 @@ public class LaneGenerator {
 
     private GroundLane makeReachableGround() {
         Lane candidate;
-        for (int i = 0; i < MAX_GORUND_ATTEMPTS; i++) {
+        for (int i = 0; i < MAX_GROUND_ATTEMPTS; i++) {
             candidate = makeGround();
             if (!computeFrontier(candidate).isEmpty()) {
                 return (GroundLane) candidate;
@@ -159,7 +169,7 @@ public class LaneGenerator {
 
         for (int i = 0; i < cellType.length; i++) {
             int randomSeed = random.nextInt(100);
-            if (randomSeed < CORAL_CHANCE) {
+            if (randomSeed < scaled(CORAL_CHANCE_EASY, CORAL_CHANCE_HARD)) {
                 cellType[i] = CellType.CORAL;
             } else {
                 cellType[i] = CellType.FREE;
@@ -171,22 +181,41 @@ public class LaneGenerator {
 
     private Lane makeFish() {
         Lane fishLane;
-        fishLane = new FishLane(placeMoovers(randomBetween(2, 5), 1, 2), randomBetween(10, 30),
+        int minFishCount = scaled(MIN_FISH_COUNT_EASY, MIN_FISH_COUNT_HARD);
+        int maxFishCount = scaled(MAX_FISH_COUNT_EASY, MAX_FISH_COUNT_HARD);
+        int minFishLength = scaled(MIN_FISH_LENGTH_EASY, MIN_FISH_LENGTH_HARD);
+        int maxFishLength = scaled(MAX_FISH_LENGTH_EASY, MAX_FISH_LENGTH_HARD);
+        int minFishTicks = scaled(MIN_FISH_TICKS_EASY, MIN_FISH_TICKS_HARD);
+        int maxFishTicks = scaled(MAX_FISH_TICKS_EASY, MAX_FISH_TICKS_HARD);
+        fishLane = new FishLane(placeMoovers(randomBetween(minFishCount, maxFishCount),
+                minFishLength, maxFishLength), randomBetween(minFishTicks, maxFishTicks),
                 nextDirection());
         return fishLane;
     }
 
     private Lane makeRaft() {
         Lane raftLane;
-        raftLane = new RaftLane(placeMoovers(randomBetween(3, 5), 2, 4), randomBetween(15, 30),
+        int minRaftCount = scaled(MIN_RAFT_COUNT_EASY, MIN_RAFT_COUNT_HARD);
+        int maxRaftCount = scaled(MAX_RAFT_COUNT_EASY, MAX_RAFT_COUNT_HARD);
+        int minRaftLength = scaled(MIN_RAFT_LENGTH_EASY, MIN_RAFT_LENGTH_HARD);
+        int maxRaftLength = scaled(MAX_RAFT_LENGTH_EASY, MAX_RAFT_LENGTH_HARD);
+        int minRaftTicks = scaled(MIN_RAFT_TICKS_EASY, MIN_RAFT_TICKS_HARD);
+        int maxRaftTicks = scaled(MAX_RAFT_TICKS_EASY, MAX_RAFT_TICKS_HARD);
+        raftLane = new RaftLane(
+                placeMoovers(randomBetween(minRaftCount, maxRaftCount),
+                        minRaftLength, maxRaftLength), randomBetween(
+                        minRaftTicks, maxRaftTicks),
                 nextDirection());
         return raftLane;
     }
 
     private Lane makeTorpedo() {
         Lane torpedoLane;
-        int idle = randomBetween(180, 360);
-        torpedoLane = new TorpedoLane(idle, 60, 20, randomBetween(1, idle));
+        int minIdleTicks = scaled(MIN_TORPEDO_IDLE_TICKS_EASY, MIN_TORPEDO_IDLE_TICKS_HARD);
+        int maxIdleTicks = scaled(MAX_TORPEDO_IDLE_TICKS_EASY, MAX_TORPEDO_IDLE_TICKS_HARD);
+        int idle = randomBetween(minIdleTicks, maxIdleTicks);
+        torpedoLane = new TorpedoLane(idle, TORPEDO_WARNING_TICKS, TORPEDO_FIRING_TICKS,
+                randomBetween(1, idle));
         return torpedoLane;
     }
 

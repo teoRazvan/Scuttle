@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import static scuttle.model.Constants.VISIBLE_COLUMNS;
-import static scuttle.model.LaneGenerator.MAX_DANGER_STREAK;
-import static scuttle.model.LaneGenerator.SAFE_START_LANES;
+import static scuttle.model.GameRules.MAX_DANGER_STREAK;
+import static scuttle.model.GameRules.SAFE_START_LANES;
 
 public class LaneGeneratorTest {
 
