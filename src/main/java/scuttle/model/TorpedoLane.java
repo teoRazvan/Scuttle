@@ -2,6 +2,7 @@ package scuttle.model;
 
 public class TorpedoLane extends Lane {
 
+    public static final int LAUNCHER_COLUMN = 0;
     private final int idleTicks;
     private final int warningTicks;
     private final int firingTicks;
@@ -34,6 +35,9 @@ public class TorpedoLane extends Lane {
     @Override
 
     public boolean canStepOn(int column) {
+        if (column == LAUNCHER_COLUMN) {
+            return false;
+        }
         return true;
     }
 

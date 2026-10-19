@@ -31,6 +31,7 @@ import scuttle.model.Player;
 import scuttle.model.Position;
 import scuttle.model.RaftLane;
 import scuttle.model.TorpedoLane;
+import static scuttle.model.TorpedoLane.LAUNCHER_COLUMN;
 import scuttle.model.World;
 
 /**
@@ -300,7 +301,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     }
 
     private void drawFishLane(FishLane lane, Graphics2D g, int row) {
-        System.out.println(lane.getDirection());
         for (int column = 0; column < VISIBLE_COLUMNS; column++) {
             drawTile(g, variant(Sprites.TATTERED, column, row), column, row);
         }
@@ -318,7 +318,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     }
 
     private void drawRaftLane(RaftLane lane, Graphics2D g, int row) {
-        System.out.println(lane.getDirection());
         for (int column = 0; column < VISIBLE_COLUMNS; column++) {
             drawTile(g, variant(Sprites.CHASM, column, row), column, row);
         }
@@ -335,26 +334,51 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         }
     }
 
+    private void drawLauncher(Graphics2D g, TorpedoLane lane, int row) {
+        int frame = (warningCounter / 3) % 2;
+        if (lane.isFiring()) {
+            drawTile(g, Sprites.LAUNCHER_FIRE[frame], LAUNCHER_COLUMN, row);
+            drawTile(g, Sprites.TORPEDO_BLAST_START[frame], LAUNCHER_COLUMN, row);
+        } else if (lane.isWarning()) {
+            drawTile(g, Sprites.LAUNCHER_FIRE[(warningCounter / 3) % 3], LAUNCHER_COLUMN, row);
+
+        } else {
+            drawTile(g, Sprites.TORPEDO_LAUNCHER, LAUNCHER_COLUMN, row);
+
+        }
+    }
+
     private void drawTorpedoLane(TorpedoLane lane, Graphics2D g, int row) {
-        System.out.println(lane.getDirection());
+        int frame = (warningCounter / 3) % 2;
         for (int column = 1; column < VISIBLE_COLUMNS; column++) {
-            if (((TorpedoLane) lane).isWarning() && (warningCounter / 10) % 2 == 0) {
+            drawTile(g, variant(Sprites.TORPEDO_TRACK, column, row), column, row);
+            if (lane.isWarning() && (warningCounter / 10) % 2 == 0) {
                 drawTile(g, Sprites.TORPEDO_HAZARD, column, row);
-            } else if (((TorpedoLane) lane).isFiring()) {
-                drawTile(g, Sprites.TORPEDO_BLAST[Math.floorMod(column + warningCounter / 3, 2)],
+            } else if (lane.isFiring()) {
+                drawTile(g, Sprites.TORPEDO_BLAST[frame],
                         column, row);
-            } else {
-                drawTile(g, variant(Sprites.TORPEDO_TRACK, column, row), column, row);
             }
         }
         drawTile(g, variant(Sprites.TORPEDO_TRACK, 0, row), 0, row);
-        drawTile(g, Sprites.TORPEDO_LAUNCHER, 0, row);
-
     }
 
     private BufferedImage variant(BufferedImage[] variants, int column, int row) {
         long randomHash = column * 73856093 ^ row * 19349663;
         return variants[Math.floorMod(randomHash, variants.length)];
+    }
+
+    private void drawEdges(Graphics2D g, int row) {
+        if (row == world.getCameraRow()) {
+            drawTile(g, Sprites.EDGE_CORNER_LEFT, 0, row);
+            drawTile(g, Sprites.EDGE_CORNER_RIGHT, VISIBLE_COLUMNS - 1, row);
+            for (int column = 1; column < VISIBLE_COLUMNS - 1; column++) {
+                drawTile(g, variant(Sprites.EDGE_BOTTOM, column, row), column, row);
+            }
+        } else {
+            drawTile(g, variant(Sprites.EDGE_LEFT, 0, row), 0, row);
+            drawTile(g, variant(Sprites.EDGE_RIGHT, VISIBLE_COLUMNS - 1, row), VISIBLE_COLUMNS - 1,
+                    row);
+        }
     }
 
     private void drawLanes(Graphics2D g) {
@@ -378,6 +402,11 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
                 }
                 default ->
                     throw new IllegalStateException("Unexpected value: " + lane);
+            }
+            drawEdges(g, row);
+            if (lane instanceof TorpedoLane) {
+                drawLauncher(g, (TorpedoLane) lane, row);
+
             }
         }
     }
@@ -450,6 +479,8 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             drawPlayer(g2);
             drawTint(g2);
             if (world.isGameOver()) {
+                drawTile(g2, Sprites.CRAB_DEAD, world.getPlayer().getPosition().getColumn(),
+                        world.getPlayer().getPosition().getRow());
                 drawGameOver(g2);
             } else if (paused) {
                 drawPaused(g2);

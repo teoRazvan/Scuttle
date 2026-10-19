@@ -29,6 +29,8 @@ public final class Sprites {
     static final BufferedImage TORPEDO_LAUNCHER = GuiAssets.load("/sprites/torpedo_launcher.png");
     static final BufferedImage[] TORPEDO_TRACK = loadVariants("torpedo_track", 2);
     static final BufferedImage[] TORPEDO_BLAST = loadVariants("torpedo_blast", 2);
+    static final BufferedImage[] LAUNCHER_FIRE = loadVariants("torpedo_launcher_fire", 3);
+    static final BufferedImage[] TORPEDO_BLAST_START = loadVariants("torpedo_blast_start", 2);
 
     //player
     static final BufferedImage CRAB_DEAD = GuiAssets.load("/sprites/crab_dead.png");
@@ -36,6 +38,15 @@ public final class Sprites {
     private static final BufferedImage CRAB_DOWN = GuiAssets.load("/sprites/crab_down.png");
     private static final BufferedImage CRAB_LEFT = GuiAssets.load("/sprites/crab_left.png");
     private static final BufferedImage CRAB_RIGHT = GuiAssets.load("/sprites/crab_right.png");
+
+    //map edges
+    static final BufferedImage[] EDGE_LEFT = loadVariants("edge_left", 2);
+    static final BufferedImage[] EDGE_RIGHT = loadVariants("edge_right", 2);
+    static final BufferedImage[] EDGE_BOTTOM = loadVariants("edge_back", 2);
+    static final BufferedImage EDGE_CORNER_LEFT = GuiAssets.load(
+            "/sprites/edge_corner_left.png");
+    static final BufferedImage EDGE_CORNER_RIGHT = GuiAssets.load(
+            "/sprites/edge_corner_right.png");
 
     private Sprites() {
     }
