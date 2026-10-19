@@ -20,6 +20,10 @@ public abstract class Lane {
 
     }
 
+    public int getDirection() {
+        return 0;
+    }
+
     public int drift(int tick) {
         return 0;
     }

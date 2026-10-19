@@ -1,22 +1,103 @@
 package scuttle.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.LaneGenerator.MAX_DANGER_STREAK;
+import static scuttle.model.LaneGenerator.SAFE_START_LANES;
 
 public class LaneGeneratorTest {
 
-    private static int LANE_COUNT = 200;
-    private static int SEED = 42;
+    private static final int LANE_COUNT = 2000;
+    private static final long SEED = 42;
 
     @Test
     public void sameSeedGivesSameLanes() {
-
         LaneGenerator generator1 = new LaneGenerator(new Random(SEED));
         LaneGenerator generator2 = new LaneGenerator(new Random(SEED));
 
         for (int i = 0; i < LANE_COUNT; i++) {
             assertEquals(generator1.next().getType(), generator2.next().getType());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1, 2, 3, 42, 1234})
+    public void generatedWorldIsAlwaysCrossable(long seed) {
+        LaneGenerator generator = new LaneGenerator(new Random(seed));
+        List<Lane> lanes = new ArrayList<>();
+
+        for (int i = 0; i < LANE_COUNT; i++) {
+            lanes.add(generator.next());
+        }
+        List<Position> starts = new ArrayList<>();
+        for (int i = 0; i < VISIBLE_COLUMNS; i++) {
+            starts.add(new Position(i, 0));
+        }
+
+        boolean[] rowReached = new boolean[lanes.size()];
+
+        Set<Position> reachable = Reachability.reachable(lanes, starts, 0, lanes.size());
+        for (Position position: reachable) {
+            rowReached[position.getRow()] = true;
+        }
+        for (int row = 0; row < rowReached.length; row++) {
+            assertTrue(rowReached[row], "row " + row + " unreachable with seed " + seed);
+        }
+    }
+
+    @Test
+    public void firstLanesAreSafe() {
+        LaneGenerator generator = new LaneGenerator(new Random(SEED));
+
+        for (int i = 0; i < SAFE_START_LANES; i++) {
+            Lane lane = generator.next();
+            assertEquals(LaneType.GROUND, lane.getType());
+            for (int j = 0; j < VISIBLE_COLUMNS; j++) {
+                assertTrue(lane.canStepOn(j));
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1, 2, 3, 42, 1234})
+    public void dangerStreakNeverExeedsMax(long seed) {
+        LaneGenerator generator = new LaneGenerator(new Random(seed));
+        List<Lane> lanes = new ArrayList<>();
+        final int LANE_COUNT = 10000;
+
+        for (int i = 0; i < LANE_COUNT; i++) {
+            lanes.add(generator.next());
+        }
+        int counter = 0;
+        for (int i = 0; i < LANE_COUNT; i++) {
+            if (lanes.get(i).getType() == LaneType.GROUND) {
+                counter = 0;
+            } else {
+                counter++;
+            }
+            assertTrue(counter <= MAX_DANGER_STREAK, "streak too long at lane " + i);
+        }
+    }
+
+    @Test
+    public void neighbouringWaterLanesMoveOpposite() {
+        LaneGenerator generator = new LaneGenerator(new Random(SEED));
+        int previousDirection = 0;
+
+        for (int i = 0; i < LANE_COUNT; i++) {
+            int currentDirection = generator.next().getDirection();
+            if (previousDirection != 0 && currentDirection != 0) {
+                assertNotEquals(previousDirection, currentDirection, "lanes " + (i - 1) + " and "
+                        + i);
+            }
+            previousDirection = currentDirection;
         }
     }
 

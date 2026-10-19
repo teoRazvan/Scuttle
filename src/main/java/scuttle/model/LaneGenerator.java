@@ -12,8 +12,9 @@ import static scuttle.model.Constants.VISIBLE_COLUMNS;
 public class LaneGenerator {
 
     private static final int CORAL_CHANCE = 30;
-    private static final int MAX_DANGER_STREAK = 4;
+    static final int MAX_DANGER_STREAK = 4;
     private static final int MAX_GORUND_ATTEMPTS = 10;
+    static final int SAFE_START_LANES = 4;
 
     private Lane previousLane = null;
     private Set<Position> frontier = new HashSet<>();
@@ -63,7 +64,7 @@ public class LaneGenerator {
     public Lane next() {
         Lane lane = null;
         lanesMade++;
-        if (lanesMade < 5) {
+        if (lanesMade <= SAFE_START_LANES) {
 
             lane = makePlainCround();
         } else if (dangerStreak >= MAX_DANGER_STREAK) {

@@ -58,4 +58,9 @@ public class RaftLane extends Lane {
         return 0;
     }
 
+    @Override
+    public int getDirection() {
+        return direction;
+    }
+
 }
