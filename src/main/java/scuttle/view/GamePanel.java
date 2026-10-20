@@ -33,7 +33,7 @@ public class GamePanel extends JPanel implements ActionListener {
     private static final double PAUSE_BUTTON_SIZE = 0.2;
     private static final double PAUSE_BOTTOM_WEIGHT = 0.6;
     private static final double PAUSE_ICON_SIZE = 48.0;
-    private static final int PAUSE_BUTTON_MARGIN = 16;
+    private static final int PAUSE_BUTTON_MARGIN = 35;
     private static final int BUTTON_INSETS = 8;
 
     private final Timer timer;
@@ -96,7 +96,8 @@ public class GamePanel extends JPanel implements ActionListener {
             requestFocusInWindow();
         });
 
-        JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, PAUSE_BUTTON_MARGIN, 0));
+        JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, PAUSE_BUTTON_MARGIN,
+                PAUSE_BUTTON_MARGIN));
         hud.setOpaque(false);
         hud.add(pauseButton);
         add(hud, BorderLayout.NORTH);

@@ -5,13 +5,14 @@ public final class GameRules {
     // Fixed rules
     static final int MAX_DANGER_STREAK = 4;
     static final int SAFE_START_LANES = 4;
-    static final int CORAL_CHANCE_EASY = 30;
     static final int MAX_GROUND_ATTEMPTS = 10;
     static final int COIN_GROUND_CHANCE = 50;
     // Max difficulty from this lane onward
     static final int DIFFICULTY_RAMP_LANES = 300;
 
     // Easiest ruleset
+    static final int CORAL_CHANCE_EASY = 30;
+
     static final int GROUND_WEIGHT_EASY = 40;
     static final int FISH_WEIGHT_EASY = 30;
     static final int RAFT_WEIGHT_EASY = 20;
