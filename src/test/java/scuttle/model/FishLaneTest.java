@@ -1,14 +1,19 @@
 package scuttle.model;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 public class FishLaneTest {
 
-    public FishLaneTest() {
-    }
+    private static final int IDLE_TICKS = 2;
+    private static final int WARNING_TICKS = 2;
+    private static final int FIRING_TICKS = 2;
+    private static final int INITIAL_DELAY = 1;
 
-    @Test
-    public void testSomeMethod() {
+    private Lane lane;
+
+    @BeforeEach
+    public void setup() {
+        lane = new TorpedoLane(IDLE_TICKS, WARNING_TICKS, FIRING_TICKS, INITIAL_DELAY);
     }
 
 }

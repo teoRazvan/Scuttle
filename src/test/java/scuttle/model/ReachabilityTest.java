@@ -56,19 +56,21 @@ public class ReachabilityTest {
 
     @Test
     public void waterRowIsOpen() {
-        List<Lane> lanes = List.of(openSand(), wallExcept(0), water(), wallExcept(VISIBLE_COLLUMNS
-                - 1), openSand());
-        Set<Position> reachable = Reachability.reachable(lanes, List.of(new Position(14, 0)), 0, 5);
+        List<Lane> lanes = List.of(openSand(), wallExcept(0), water(),
+                wallExcept(VISIBLE_COLLUMNS - 1), openSand());
+        Set<Position> reachable = Reachability.reachable(lanes, List.of(new Position(
+                VISIBLE_COLLUMNS / 2, 0)), 0, 5);
 
-        assertTrue(reachable.contains(new Position(20, 4)));
+        assertTrue(reachable.contains(new Position(VISIBLE_COLLUMNS - 8, 4)));
     }
 
     @Test
     public void pathCanGoDownAndBackUp() {
-        List<Lane> lanes = List.of(openSand(), wallExcept(2, 20), wallExcept(20));
+        List<Lane> lanes = List.of(openSand(), wallExcept(2, VISIBLE_COLLUMNS - 8),
+                wallExcept(VISIBLE_COLLUMNS - 8));
         Set<Position> reachable = Reachability.reachable(lanes, List.of(new Position(2, 1)), 0, 3);
 
-        assertTrue(reachable.contains(new Position(20, 2)));
+        assertTrue(reachable.contains(new Position(VISIBLE_COLLUMNS - 8, 2)));
     }
 
     @Test

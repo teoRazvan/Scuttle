@@ -8,13 +8,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 import static scuttle.model.GameRules.MAX_DANGER_STREAK;
 import static scuttle.model.GameRules.SAFE_START_LANES;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 
 public class LaneGeneratorTest {
 
     private static final int LANE_COUNT = 2000;
+    private static final int LONG_RUN_LANE_COUNT = 2000;
     private static final long SEED = 42;
 
     @Test
@@ -60,23 +61,22 @@ public class LaneGeneratorTest {
             Lane lane = generator.next();
             assertEquals(LaneType.GROUND, lane.getType());
             for (int j = 0; j < VISIBLE_COLLUMNS; j++) {
-                assertTrue(lane.canStepOn(j));
+                assertTrue(lane.canStepOn(j), "lane " + i + " column " + j);
             }
         }
     }
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 3, 42, 1234})
-    public void dangerStreakNeverExeedsMax(long seed) {
+    public void dangerStreakNeverExceedsMax(long seed) {
         LaneGenerator generator = new LaneGenerator(new Random(seed));
         List<Lane> lanes = new ArrayList<>();
-        final int LANE_COUNT = 10000;
 
-        for (int i = 0; i < LANE_COUNT; i++) {
+        for (int i = 0; i < LONG_RUN_LANE_COUNT; i++) {
             lanes.add(generator.next());
         }
         int counter = 0;
-        for (int i = 0; i < LANE_COUNT; i++) {
+        for (int i = 0; i < LONG_RUN_LANE_COUNT; i++) {
             if (lanes.get(i).getType() == LaneType.GROUND) {
                 counter = 0;
             } else {

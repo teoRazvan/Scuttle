@@ -7,59 +7,72 @@ import static scuttle.model.Constants.LANE_WIDTH;
 
 public class MoverTest {
 
+    private static final int START = 5;
+    private static final int LENGTH = 3;
+    private static final int LAST_CELL = LANE_WIDTH - HIDDEN_MARGIN - 1;
+    private static final int FIRST_CELL = -HIDDEN_MARGIN;
+
     @Test
     public void coversItsOwnCells() {
-        int length = 3;
-        int start = 5;
-        Mover mover = new Mover(start, length);
-        assertTrue(mover.covers(5) && mover.covers(6) && mover.covers(7));
+
+        Mover mover = new Mover(START, LENGTH);
+        assertAll("Covers",
+                () -> assertTrue(mover.covers(START), "Start cell"),
+                () -> assertTrue(mover.covers(START + 1), "Midle cell"),
+                () -> assertTrue(mover.covers(START + LENGTH - 1), "Last cell")
+        );
     }
 
     @Test
     public void doesNotCoverNeighbouringCells() {
-        int length = 3;
-        int start = 5;
-        Mover mover = new Mover(start, length);
-        assertFalse(mover.covers(4) || mover.covers(8));
+        Mover mover = new Mover(START, LENGTH);
+        assertAll("Does not cover",
+                () -> assertFalse(mover.covers(START - 1), "Cell just before"),
+                () -> assertFalse(mover.covers(START + LENGTH), "Cell just after")
+        );
     }
 
     @Test
     public void shiftingMoves() {
-        int length = 3;
-        int start = 5;
-        Mover mover = new Mover(start, length);
+        Mover mover = new Mover(START, LENGTH);
         mover.shift(1);
-        assertFalse(mover.covers(5));
-        assertTrue(mover.covers(6) && mover.covers(7) && mover.covers(8));
+        assertFalse(mover.covers(5), "Does not cover old start cell");
+        assertAll("Covers",
+                () -> assertTrue(mover.covers(START + 1), "New start cell"),
+                () -> assertTrue(mover.covers(START + 2), "New midle cell"),
+                () -> assertTrue(mover.covers(START + LENGTH), "New last cell")
+        );
     }
 
     @Test
     public void wrapsAcrossTheEdge() {
         int length = 2;
-        int start = LANE_WIDTH - HIDDEN_MARGIN - 1;
+        int start = LAST_CELL;
         Mover mover = new Mover(start, length);
-
-        assertTrue(mover.covers(LANE_WIDTH - HIDDEN_MARGIN - 1) && mover.covers(-HIDDEN_MARGIN));
+        assertAll("Wrapped",
+                () -> assertTrue(mover.covers(LAST_CELL), "Right cell"),
+                () -> assertTrue(mover.covers(FIRST_CELL), "Left wrap cell")
+        );
     }
 
     @Test
     public void shiftingToTheRightWraps() {
         int length = 1;
-        int start = LANE_WIDTH - HIDDEN_MARGIN - 1;
+        int start = LAST_CELL;
         Mover mover = new Mover(start, length);
         mover.shift(1);
 
-        assertTrue(mover.covers(-HIDDEN_MARGIN));
+        assertTrue(mover.covers(FIRST_CELL));
     }
 
     @Test
     public void shiftingToTheLeftWraps() {
         int length = 1;
-        int start = -HIDDEN_MARGIN;
+        int start = FIRST_CELL;
         Mover mover = new Mover(start, length);
         mover.shift(-1);
 
-        assertTrue(mover.covers(LANE_WIDTH - HIDDEN_MARGIN - 1));
+        assertTrue(mover.covers(LAST_CELL));
     }
 
 }

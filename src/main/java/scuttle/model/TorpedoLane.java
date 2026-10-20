@@ -19,7 +19,7 @@ public class TorpedoLane extends Lane {
 
     public TorpedoLane(int idleTicks, int warningTicks, int firingTicks, int initialDelay) {
         super(LaneType.TORPEDO);
-        if (warningTicks < 1 || firingTicks < 1 || firingTicks < 1) {
+        if (warningTicks < 1 || firingTicks < 1 || idleTicks < 1) {
             throw new IllegalArgumentException("Tick Counts must be at least 1");
         }
         if (initialDelay < 1) {

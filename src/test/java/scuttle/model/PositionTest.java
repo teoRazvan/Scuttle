@@ -24,7 +24,7 @@ public class PositionTest {
     }
 
     @Test
-    public void differentColumnIsNotEquals() {
+    public void differentColumnIsNotEqual() {
         int column1 = 4;
         int column2 = 5;
         int row = 2;
@@ -71,10 +71,10 @@ public class PositionTest {
         Position left = new Position(column - 1, row);
         Position right = new Position(column + 1, row);
 
-        assertEquals(position.step(Direction.DOWN), down);
-        assertEquals(position.step(Direction.UP), up);
-        assertEquals(position.step(Direction.LEFT), left);
-        assertEquals(position.step(Direction.RIGHT), right);
+        assertEquals(down, position.step(Direction.DOWN));
+        assertEquals(up, position.step(Direction.UP));
+        assertEquals(left, position.step(Direction.LEFT));
+        assertEquals(right, position.step(Direction.RIGHT));
     }
 
 }
