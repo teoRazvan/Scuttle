@@ -1,5 +1,6 @@
 package scuttle.view;
 
+import scuttle.controller.GameInput;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import scuttle.model.Direction;

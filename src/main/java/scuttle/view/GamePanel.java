@@ -15,10 +15,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import javax.swing.Timer;
-import scuttle.model.CoinAmount;
+import scuttle.controller.GameController;
 import static scuttle.model.Constants.TICK_DELAY;
-import scuttle.model.Direction;
-import scuttle.model.HighScore;
 import scuttle.model.World;
 import static scuttle.view.ViewConstants.*;
 
@@ -28,9 +26,8 @@ import static scuttle.view.ViewConstants.*;
  *
  * TEMP it runs the game loop and handles input, will be changed later
  */
-public class GamePanel extends JPanel implements ActionListener, GameInput {
+public class GamePanel extends JPanel implements ActionListener {
 
-    private int frameCounter = 0;
     private final Timer timer;
     private final KeyHandler keyH;
     private final JPanel overlay;
@@ -40,8 +37,8 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     private final ImageButton pauseMenuButton;
     private final ImageButton pauseButton;
     private final Runnable onMenu;
-    private World world = new World();
-    private boolean paused;
+
+    private final GameController controller = new GameController();
 
     private final WorldRenderer worldRenderer = new WorldRenderer();
     private final HudRenderer hudRenderer = new HudRenderer();
@@ -49,7 +46,7 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     public GamePanel(Runnable onMenu) {
         this.onMenu = onMenu;
         timer = new Timer(TICK_DELAY, this);
-        keyH = new KeyHandler(this);
+        keyH = new KeyHandler(controller);
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.setDoubleBuffered(true);
@@ -65,7 +62,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
                 GuiAssets.button(GuiAssets.MENU, GuiAssets.IDLE),
                 GuiAssets.button(GuiAssets.MENU, GuiAssets.HOVER),
                 GuiAssets.button(GuiAssets.MENU, GuiAssets.PRESSED));
-        restartButton.addActionListener(e -> restart());
+        restartButton.addActionListener(e -> {
+            controller.restart();
+            requestFocusInWindow();
+        });
         menuButton.addActionListener(e -> returnToMenu());
 
         overlay = new JPanel(new GridBagLayout()) {
@@ -163,7 +163,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
         BufferedImage pauseIcon = GuiAssets.pauseIcon();
         pauseButton = new ImageButton(pauseIcon, pauseIcon, pauseIcon);
         pauseButton.applyScale(48.0 / pauseIcon.getWidth());
-        pauseButton.addActionListener(e -> togglePause());
+        pauseButton.addActionListener(e -> {
+            controller.togglePause();
+            requestFocusInWindow();
+        });
 
         JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 0));
         hud.setOpaque(false);
@@ -173,63 +176,34 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     }
 
     public void startGame() {
-        paused = false;
-        pauseOverlay.setVisible(false);
-        pauseButton.setVisible(true);
+        syncOverlay();
         timer.start();
         this.requestFocusInWindow();
     }
 
-    @Override
-    public void move(Direction direction) {
-        if (paused) {
-            return;
-        }
-        world.movePlayer(direction);
-    }
-
-    @Override
-    public void restart() {
-        if (world.isGameOver()) {
-            world = new World();
-            paused = false;
-            pauseOverlay.setVisible(false);
-            pauseButton.setVisible(true);
-            overlay.setVisible(false);
-            this.requestFocusInWindow();
-        }
-    }
-
-    @Override
-    public void togglePause() {
-        if (world.isGameOver()) {
-            return;
-        }
-        paused = !paused;
-        pauseOverlay.setVisible(paused);
-        this.requestFocusInWindow();
+    private void syncOverlay() {
+        overlay.setVisible(controller.isGameOver());
+        pauseOverlay.setVisible(controller.isPaused() && !controller.isGameOver());
+        pauseButton.setVisible(!controller.isGameOver());
     }
 
     private void returnToMenu() {
         timer.stop();
-        paused = false;
-        pauseOverlay.setVisible(false);
-        world = new World();
-        overlay.setVisible(false);
+        controller.reset();
+        syncOverlay();
         onMenu.run();
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!paused) {
-            this.frameCounter++;
-            this.update();
-        }
-        this.repaint();
+        controller.tick();
+        syncOverlay();
+        repaint();
     }
 
     @Override
     public void paintComponent(Graphics g) {
+        World world = controller.getWorld();
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g.create();
         try {
@@ -239,10 +213,10 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
             g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                     RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 
-            worldRenderer.draw(g2, world, frameCounter);
+            worldRenderer.draw(g2, world, controller.getFrameCounter());
             if (world.isGameOver()) {
                 hudRenderer.drawGameOver(g2, world.getScore());
-            } else if (paused) {
+            } else if (controller.isPaused()) {
                 hudRenderer.drawPaused(g2);
             }
             hudRenderer.drawScore(g2, world.getScore(), world.getCoinAmount());
@@ -254,20 +228,6 @@ public class GamePanel extends JPanel implements ActionListener, GameInput {
     @Override
     public boolean isOptimizedDrawingEnabled() {
         return false;
-    }
-
-    private void update() {
-        world.update();
-        if (world.isGameOver() != overlay.isVisible()) {
-            HighScore.submit(world.getScore());
-            CoinAmount.add(world.getCoinAmount());
-            overlay.setVisible(world.isGameOver());
-            pauseButton.setVisible(!world.isGameOver());
-            if (world.isGameOver()) {
-                paused = false;
-                pauseOverlay.setVisible(false);
-            }
-        }
     }
 
 }

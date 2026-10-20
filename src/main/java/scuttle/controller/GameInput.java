@@ -1,4 +1,4 @@
-package scuttle.view;
+package scuttle.controller;
 
 import scuttle.model.Direction;
 
