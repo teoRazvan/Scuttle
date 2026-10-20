@@ -25,6 +25,12 @@ class ImageButton extends JButton {
         applyScale(1);
     }
 
+    static ImageButton fromAssets(int buttonRow) {
+        return new ImageButton(GuiAssets.button(buttonRow, GuiAssets.IDLE),
+                GuiAssets.button(buttonRow, GuiAssets.HOVER),
+                GuiAssets.button(buttonRow, GuiAssets.PRESSED));
+    }
+
     void applyScale(double scale) {
         int width = Math.max(1, (int) Math.round(idle.getWidth() * scale));
         int height = Math.max(1, (int) Math.round(idle.getHeight() * scale));
@@ -41,4 +47,5 @@ class ImageButton extends JButton {
         setMinimumSize(size);
         setMaximumSize(size);
     }
+
 }

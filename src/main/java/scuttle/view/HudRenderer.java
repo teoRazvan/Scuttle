@@ -65,7 +65,7 @@ public final class HudRenderer {
     private void drawShadowedText(Graphics2D g, String text, int x, int y, Color color) {
         g.setFont(HUD_FONT);
         g.setColor(SHADOW_COLOR);
-        g.drawString(text, x - SHADOW_OFFSET, y - SHADOW_OFFSET);
+        g.drawString(text, x + SHADOW_OFFSET, y + SHADOW_OFFSET);
         g.setColor(color);
         g.drawString(text, x, y);
 

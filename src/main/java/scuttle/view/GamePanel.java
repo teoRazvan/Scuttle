@@ -24,12 +24,19 @@ import static scuttle.view.ViewConstants.*;
  *
  * Game panel is the drawing surface
  *
- * TEMP it runs the game loop and handles input, will be changed later
  */
+@SuppressWarnings("serial")
 public class GamePanel extends JPanel implements ActionListener {
 
+    private static final double GAME_OVER_BUTTON_SIZE = 0.14;
+    private static final double GAME_OVER_BOTTOM_WEIGHT = 0.5;
+    private static final double PAUSE_BUTTON_SIZE = 0.2;
+    private static final double PAUSE_BOTTOM_WEIGHT = 0.6;
+    private static final double PAUSE_ICON_SIZE = 48.0;
+    private static final int PAUSE_BUTTON_MARGIN = 16;
+    private static final int BUTTON_INSETS = 8;
+
     private final Timer timer;
-    private final KeyHandler keyH;
     private final JPanel overlay;
     private final JPanel pauseOverlay;
     private final ImageButton restartButton;
@@ -46,107 +53,28 @@ public class GamePanel extends JPanel implements ActionListener {
     public GamePanel(Runnable onMenu) {
         this.onMenu = onMenu;
         timer = new Timer(TICK_DELAY, this);
-        keyH = new KeyHandler(controller);
-        this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
-        this.setBackground(Color.black);
-        this.setDoubleBuffered(true);
-        this.addKeyListener(keyH);
-        this.setFocusable(true);
-        this.setLayout(new BorderLayout());
+        KeyHandler keyHandler = new KeyHandler(controller);
+        setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
+        setBackground(Color.BLACK);
+        addKeyListener(keyHandler);
+        setFocusable(true);
+        setLayout(new BorderLayout());
 
-        restartButton = new ImageButton(
-                GuiAssets.button(GuiAssets.RESTART, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.RESTART, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.RESTART, GuiAssets.PRESSED));
-        menuButton = new ImageButton(
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.PRESSED));
+        restartButton = ImageButton.fromAssets(GuiAssets.RESTART);
+        menuButton = ImageButton.fromAssets(GuiAssets.MENU);
         restartButton.addActionListener(e -> {
             controller.restart();
             requestFocusInWindow();
         });
         menuButton.addActionListener(e -> returnToMenu());
 
-        overlay = new JPanel(new GridBagLayout()) {
-            @Override
-            public void doLayout() {
-                double scale = (Math.min(getWidth(), getHeight()) * 0.14) / GuiAssets.BUTTON_WIDTH;
-                restartButton.applyScale(scale);
-                menuButton.applyScale(scale);
-                super.doLayout();
-            }
-        };
-        overlay.setOpaque(false);
-        overlay.setVisible(false);
+        overlay = createButtonOverlay(GAME_OVER_BUTTON_SIZE, GAME_OVER_BOTTOM_WEIGHT, restartButton,
+                menuButton);
 
-        JPanel spacerTop = new JPanel();
-        spacerTop.setOpaque(false);
-        JPanel spacerBottom = new JPanel();
-        spacerBottom.setOpaque(false);
-
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-
-        constraints.gridy = 0;
-        constraints.weighty = 1;
-        constraints.fill = GridBagConstraints.BOTH;
-        overlay.add(spacerTop, constraints);
-
-        constraints.weighty = 0;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.insets = new Insets(8, 8, 8, 8);
-        constraints.gridy = 1;
-        overlay.add(restartButton, constraints);
-        constraints.gridy = 2;
-        overlay.add(menuButton, constraints);
-
-        constraints.gridy = 3;
-        constraints.weighty = 0.5;
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.insets = new Insets(0, 0, 0, 0);
-        overlay.add(spacerBottom, constraints);
-
-        pauseMenuButton = new ImageButton(
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.MENU, GuiAssets.PRESSED));
+        pauseMenuButton = ImageButton.fromAssets(GuiAssets.MENU);
         pauseMenuButton.addActionListener(e -> returnToMenu());
 
-        pauseOverlay = new JPanel(new GridBagLayout()) {
-            @Override
-            public void doLayout() {
-                double scale = (Math.min(getWidth(), getHeight()) * 0.2) / GuiAssets.BUTTON_WIDTH;
-                pauseMenuButton.applyScale(scale);
-                super.doLayout();
-            }
-        };
-        pauseOverlay.setOpaque(false);
-        pauseOverlay.setVisible(false);
-
-        JPanel pauseSpacerTop = new JPanel();
-        pauseSpacerTop.setOpaque(false);
-        JPanel pauseSpacerBottom = new JPanel();
-        pauseSpacerBottom.setOpaque(false);
-
-        GridBagConstraints pauseConstraints = new GridBagConstraints();
-        pauseConstraints.gridx = 0;
-        pauseConstraints.gridy = 0;
-        pauseConstraints.weighty = 1;
-        pauseConstraints.fill = GridBagConstraints.BOTH;
-        pauseOverlay.add(pauseSpacerTop, pauseConstraints);
-
-        pauseConstraints.weighty = 0;
-        pauseConstraints.fill = GridBagConstraints.NONE;
-        pauseConstraints.insets = new Insets(8, 8, 8, 8);
-        pauseConstraints.gridy = 1;
-        pauseOverlay.add(pauseMenuButton, pauseConstraints);
-
-        pauseConstraints.gridy = 2;
-        pauseConstraints.weighty = 0.6;
-        pauseConstraints.fill = GridBagConstraints.BOTH;
-        pauseConstraints.insets = new Insets(0, 0, 0, 0);
-        pauseOverlay.add(pauseSpacerBottom, pauseConstraints);
+        pauseOverlay = createButtonOverlay(PAUSE_BUTTON_SIZE, PAUSE_BOTTOM_WEIGHT, pauseMenuButton);
 
         JPanel layers = new JPanel(null) {
             @Override
@@ -158,27 +86,77 @@ public class GamePanel extends JPanel implements ActionListener {
         layers.setOpaque(false);
         layers.add(overlay);
         layers.add(pauseOverlay);
-        this.add(layers, BorderLayout.CENTER);
+        add(layers, BorderLayout.CENTER);
 
         BufferedImage pauseIcon = GuiAssets.pauseIcon();
         pauseButton = new ImageButton(pauseIcon, pauseIcon, pauseIcon);
-        pauseButton.applyScale(48.0 / pauseIcon.getWidth());
+        pauseButton.applyScale(PAUSE_ICON_SIZE / pauseIcon.getWidth());
         pauseButton.addActionListener(e -> {
             controller.togglePause();
             requestFocusInWindow();
         });
 
-        JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, 16, 0));
+        JPanel hud = new JPanel(new FlowLayout(FlowLayout.RIGHT, PAUSE_BUTTON_MARGIN, 0));
         hud.setOpaque(false);
         hud.add(pauseButton);
-        this.add(hud, BorderLayout.NORTH);
+        add(hud, BorderLayout.NORTH);
+    }
 
+    private JPanel createButtonOverlay(double sizeFactor, double bottomWeight,
+            ImageButton... buttons) {
+        JPanel panel = new JPanel(new GridBagLayout()) {
+            @Override
+            public void doLayout() {
+                double scale = (Math.min(getWidth(), getHeight()) * sizeFactor)
+                        / GuiAssets.BUTTON_WIDTH;
+                for (ImageButton button: buttons) {
+                    button.applyScale(scale);
+                }
+                super.doLayout();
+            }
+        };
+        panel.setOpaque(false);
+        panel.setVisible(false);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+
+        JPanel spacerTop = spacer();
+        constraints.gridy = 0;
+        constraints.weighty = 1;
+        constraints.fill = GridBagConstraints.BOTH;
+        panel.add(spacerTop, constraints);
+
+        constraints.weighty = 0;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.insets = new Insets(BUTTON_INSETS, BUTTON_INSETS, BUTTON_INSETS,
+                BUTTON_INSETS);
+        for (int i = 0; i < buttons.length; i++) {
+            constraints.gridy = i + 1;
+            panel.add(buttons[i], constraints);
+        }
+
+        JPanel spacerBottom = spacer();
+
+        constraints.gridy = buttons.length + 1;
+        constraints.weighty = bottomWeight;
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.insets = new Insets(0, 0, 0, 0);
+        panel.add(spacerBottom, constraints);
+
+        return panel;
+    }
+
+    private static JPanel spacer() {
+        JPanel spacer = new JPanel();
+        spacer.setOpaque(false);
+        return spacer;
     }
 
     public void startGame() {
         syncOverlay();
         timer.start();
-        this.requestFocusInWindow();
+        requestFocusInWindow();
     }
 
     private void syncOverlay() {
@@ -203,9 +181,10 @@ public class GamePanel extends JPanel implements ActionListener {
 
     @Override
     public void paintComponent(Graphics g) {
-        World world = controller.getWorld();
         super.paintComponent(g);
+        World world = controller.getWorld();
         Graphics2D g2 = (Graphics2D) g.create();
+
         try {
             double scaleX = getWidth() <= 0 ? 1 : (double) getWidth() / SCREEN_WIDTH;
             double scaleY = getHeight() <= 0 ? 1 : (double) getHeight() / SCREEN_HEIGHT;
@@ -225,6 +204,10 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
+    /**
+     * The overlays are stacked on top of each other, and that tells Swing to repaint all the layers
+     * instead of assuming they don't overlap
+     */
     @Override
     public boolean isOptimizedDrawingEnabled() {
         return false;

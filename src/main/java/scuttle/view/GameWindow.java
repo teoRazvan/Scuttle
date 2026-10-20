@@ -16,7 +16,8 @@ public class GameWindow {
 
     private static final String MENU_CARD = "MENU";
     private static final String GAME_CARD = "GAME";
-
+    private static final String TOGGLE_FULLSCREEN = "toggleFullscreen";
+    private static final String EXIT_FULLSCREEN = "exitFullscreen";
     private boolean fullscreen;
 
     private final JFrame window;
@@ -41,15 +42,15 @@ public class GameWindow {
 
         var input = window.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         var actions = window.getRootPane().getActionMap();
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), "toggleFullscreen");
-        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0), "exitFullscreen");
-        actions.put("toggleFullscreen", new AbstractAction() {
+        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0), TOGGLE_FULLSCREEN);
+        input.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0), EXIT_FULLSCREEN);
+        actions.put(TOGGLE_FULLSCREEN, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setFullscreen(!fullscreen);
             }
         });
-        actions.put("exitFullscreen", new AbstractAction() {
+        actions.put(EXIT_FULLSCREEN, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (fullscreen) {

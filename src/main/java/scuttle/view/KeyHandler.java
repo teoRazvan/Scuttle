@@ -1,11 +1,11 @@
 package scuttle.view;
 
-import scuttle.controller.GameInput;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import scuttle.controller.GameInput;
 import scuttle.model.Direction;
 
-public class KeyHandler implements KeyListener {
+class KeyHandler implements KeyListener {
 
     private final GameInput gameInput;
     private boolean upHeld;
@@ -13,12 +13,8 @@ public class KeyHandler implements KeyListener {
     private boolean leftHeld;
     private boolean rightHeld;
 
-    public KeyHandler(GameInput gameInput) {
+    KeyHandler(GameInput gameInput) {
         this.gameInput = gameInput;
-        upHeld = false;
-        downHeld = false;
-        leftHeld = false;
-        rightHeld = false;
     }
 
     @Override
@@ -28,7 +24,6 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
         int code = e.getKeyCode();
 
         switch (code) {
@@ -56,7 +51,6 @@ public class KeyHandler implements KeyListener {
                     rightHeld = true;
                 }
             }
-            //TEMP untill Game Over menu
             case KeyEvent.VK_R -> {
                 gameInput.restart();
             }
@@ -71,8 +65,8 @@ public class KeyHandler implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-
         int code = e.getKeyCode();
+
         switch (code) {
             case KeyEvent.VK_W, KeyEvent.VK_UP ->
                 upHeld = false;
@@ -82,9 +76,8 @@ public class KeyHandler implements KeyListener {
                 leftHeld = false;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT ->
                 rightHeld = false;
-            default -> {/*other input is ignored*/
+            default -> {/*other keys are ignored*/
             }
-
         }
     }
 

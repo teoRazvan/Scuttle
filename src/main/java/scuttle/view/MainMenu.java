@@ -12,15 +12,13 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import scuttle.model.CoinAmount;
-import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.HighScore;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.view.ViewConstants.*;
 
 public class MainMenu extends JPanel {
 
-    private static final int TILE_SIZE = 16 * 3;
-    private static final int SCREEN_WIDTH = VISIBLE_COLLUMNS * TILE_SIZE;
-    private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE;
+    private static final Font BEST_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 22);
+    private static final Font COINS_FONT = new Font(Font.SANS_SERIF, Font.ITALIC, 22);
     private static final int MARGIN = 24;
 
     private final BufferedImage scene;
@@ -48,18 +46,9 @@ public class MainMenu extends JPanel {
         buttons = new JPanel(new GridBagLayout());
         buttons.setOpaque(false);
 
-        play = new ImageButton(
-                GuiAssets.button(GuiAssets.PLAY, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.PLAY, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.PLAY, GuiAssets.PRESSED));
-        options = new ImageButton(
-                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.OPTIONS, GuiAssets.PRESSED));
-        quit = new ImageButton(
-                GuiAssets.button(GuiAssets.QUIT, GuiAssets.IDLE),
-                GuiAssets.button(GuiAssets.QUIT, GuiAssets.HOVER),
-                GuiAssets.button(GuiAssets.QUIT, GuiAssets.PRESSED));
+        play = ImageButton.fromAssets(GuiAssets.PLAY);
+        options = ImageButton.fromAssets(GuiAssets.OPTIONS);
+        quit = ImageButton.fromAssets(GuiAssets.QUIT);
 
         play.addActionListener(e -> onPlay.run());
         quit.addActionListener(e -> onQuit.run());
@@ -131,12 +120,13 @@ public class MainMenu extends JPanel {
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2.drawImage(logo, logoX, logoY, logoWidth, logoHeight, null);
 
-        g2.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
+        g2.setFont(BEST_FONT);
         g2.setColor(Color.WHITE);
         g2.drawString("Best: " + HighScore.getBest(), 100, 28);
 
-        g2.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 22));
+        g2.setFont(COINS_FONT);
         g2.setColor(Color.YELLOW);
         g2.drawString("Coins: " + CoinAmount.getAmount(), 100, 50);
     }
+
 }
