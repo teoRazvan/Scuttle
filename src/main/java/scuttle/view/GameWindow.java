@@ -11,7 +11,6 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import scuttle.model.GameState;
 
 public class GameWindow {
 
@@ -97,19 +96,17 @@ public class GameWindow {
     }
 
     public void showMenu() {
-        GameState.state = GameState.MENU;
         cards.show(root, MENU_CARD);
     }
 
     public void startGame() {
-        GameState.state = GameState.PLAYING;
         cards.show(root, GAME_CARD);
         gamePanel.startGame();
     }
 
     public void quit() {
-        GameState.state = GameState.QUIT;
         window.dispose();
         System.exit(0);
     }
+
 }

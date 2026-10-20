@@ -3,14 +3,18 @@ package scuttle.model;
 import static scuttle.model.Constants.HIDDEN_MARGIN;
 import static scuttle.model.Constants.LANE_WIDTH;
 
-public class Mover {
+public final class Mover {
 
     private int startCell;
     private final int length;
 
     public Mover(int startCell, int length) {
         if (length >= HIDDEN_MARGIN * 2) {
-            throw new IllegalArgumentException("Length must be less then to 2X the hidden margin");
+            throw new IllegalArgumentException("length must be less than 2 * HIDDEN_MARGIN");
+        }
+        if (length < 1) {
+            throw new IllegalArgumentException("length must be at least 1");
+
         }
         this.startCell = wrapHelper(startCell);
         this.length = length;

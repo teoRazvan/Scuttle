@@ -1,6 +1,6 @@
 package scuttle.model;
 
-public class Player {
+public final class Player {
 
     private Position position;
     private Direction facing;
@@ -11,11 +11,11 @@ public class Player {
     }
 
     public Position getPosition() {
-        return this.position;
+        return position;
     }
 
     public Direction getFacing() {
-        return this.facing;
+        return facing;
     }
 
     public void move(Position nextPosition, Direction facing) {

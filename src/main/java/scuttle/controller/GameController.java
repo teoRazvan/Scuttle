@@ -5,15 +5,13 @@ import scuttle.model.Direction;
 import scuttle.model.HighScore;
 import scuttle.model.World;
 
-/**
- *
- * @author teo03
- */
 public class GameController implements GameInput {
 
     private World world;
     private boolean paused;
+    // Ticks while not paused, helps with animation
     private int frameCounter;
+    // True once this run's score and coins were saved, so they're saved only once
     private boolean resultsSaved;
 
     public GameController() {
@@ -47,15 +45,13 @@ public class GameController implements GameInput {
     @Override
     public void restart() {
         if (world.isGameOver()) {
-            world = new World();
-            paused = false;
-            resultsSaved = false;
+            reset();
         }
     }
 
     public void reset() {
-        paused = false;
         world = new World();
+        paused = false;
         resultsSaved = false;
     }
 
@@ -77,7 +73,6 @@ public class GameController implements GameInput {
             return;
         }
         paused = !paused;
-
     }
 
 }

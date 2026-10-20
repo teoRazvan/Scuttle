@@ -16,6 +16,7 @@ public abstract class Lane {
 
     public abstract boolean isDeadly(int column);
 
+    //Lanes that don't move do nothing each tick
     public void update(int tick) {
 
     }

@@ -2,19 +2,20 @@ package scuttle.model;
 
 import java.util.prefs.Preferences;
 
-public class CoinAmount {
+public final class CoinAmount {
 
-    private static final Preferences COINS = Preferences.userNodeForPackage(CoinAmount.class);
-    
-    private CoinAmount(){
-        
+    private static final Preferences PREFS = Preferences.userNodeForPackage(CoinAmount.class);
+    private static final String COIN_KEY = "coins";
+
+    private CoinAmount() {
     }
 
     public static int getAmount() {
-        return COINS.getInt("coins", 0);
+        return PREFS.getInt(COIN_KEY, 0);
     }
 
     public static void add(int value) {
-        COINS.putInt("coins", getAmount() + value);
+        PREFS.putInt(COIN_KEY, getAmount() + value);
     }
+
 }

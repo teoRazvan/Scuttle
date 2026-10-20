@@ -9,7 +9,7 @@ public final class Sprites {
 
     //lanes
     static final BufferedImage[] SAND = loadVariants("sand", 3);
-    static final BufferedImage[] CORAL = loadVariants("coral", 3);
+    static final BufferedImage[] CORAL = loadVariants("coral", 4);
     static final BufferedImage[] TATTERED = loadVariants("tattered", 2);
     static final BufferedImage[] CHASM = loadVariants("chasm", 2);
 

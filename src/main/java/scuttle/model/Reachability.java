@@ -6,21 +6,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 
 public final class Reachability {
 
     private Reachability() {
     }
 
-    public static Set<Position> reachable(List<Lane> lanes, Collection<Position> starts, int fromRow,
-            int toRow) {
+    public static Set<Position> reachable(List<Lane> lanes, Collection<Position> starts,
+            int fromRow, int toRow) {
         Set<Position> visited = new HashSet<>();
         Queue<Position> queue = new ArrayDeque<>();
-        for (Position p: starts) {
-            if (!visited.contains(p) && isOpen(lanes, p, fromRow, toRow)) {
-                visited.add(p);
-                queue.add(p);
+        for (Position start: starts) {
+            if (!visited.contains(start) && isOpen(lanes, start, fromRow, toRow)) {
+                visited.add(start);
+                queue.add(start);
             }
         }
         while (!queue.isEmpty()) {
@@ -34,11 +34,10 @@ public final class Reachability {
             }
         }
         return visited;
-
     }
 
     private static boolean isOpen(List<Lane> lanes, Position position, int fromRow, int toRow) {
-        return position.getColumn() >= 0 && position.getColumn() < VISIBLE_COLUMNS
+        return position.getColumn() >= 0 && position.getColumn() < VISIBLE_COLLUMNS
                 && position.getRow() >= fromRow && position.getRow() < toRow
                 && lanes.get(position.getRow()).canStepOn(position.getColumn());
     }

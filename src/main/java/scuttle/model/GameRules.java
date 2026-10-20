@@ -1,34 +1,27 @@
 package scuttle.model;
 
-/**
- *
- * @author teo03
- */
 public final class GameRules {
 
-    private GameRules() {
-
-    }
-    //difficulty max lane
-    static final int DIFFICULTY_RAMP_LANES = 300;
-
-    //easiest ruleset
+    // Fixed rules
     static final int MAX_DANGER_STREAK = 4;
     static final int SAFE_START_LANES = 4;
+    static final int CORAL_CHANCE_EASY = 30;
+    static final int MAX_GROUND_ATTEMPTS = 10;
+    static final int COIN_GROUND_CHANCE = 50;
+    // Max difficulty from this lane onward
+    static final int DIFFICULTY_RAMP_LANES = 300;
 
+    // Easiest ruleset
     static final int GROUND_WEIGHT_EASY = 40;
     static final int FISH_WEIGHT_EASY = 30;
     static final int RAFT_WEIGHT_EASY = 20;
     static final int TORPEDO_WEIGHT_EASY = 10;
 
-    static final int CORAL_CHANCE_EASY = 30;
-    static final int MAX_GROUND_ATTEMPTS = 10;
-    static final int COIN_GROUND_CHANCE = 50;
-
     static final int MIN_FISH_COUNT_EASY = 2;
     static final int MAX_FISH_COUNT_EASY = 5;
     static final int MIN_FISH_LENGTH_EASY = 1;
     static final int MAX_FISH_LENGTH_EASY = 3;
+    // The number of ticks between two steps lower => faster
     static final int MAX_FISH_TICKS_EASY = 30;
     static final int MIN_FISH_TICKS_EASY = 10;
 
@@ -44,7 +37,7 @@ public final class GameRules {
     static final int TORPEDO_WARNING_TICKS = 60;
     static final int TORPEDO_FIRING_TICKS = 20;
 
-    //hardest ruleset
+    // Hardest ruleset
     static final int GROUND_WEIGHT_HARD = 25;
     static final int FISH_WEIGHT_HARD = 35;
     static final int RAFT_WEIGHT_HARD = 25;
@@ -68,5 +61,9 @@ public final class GameRules {
 
     static final int MIN_TORPEDO_IDLE_TICKS_HARD = 100;
     static final int MAX_TORPEDO_IDLE_TICKS_HARD = 200;
+
+    private GameRules() {
+
+    }
 
 }

@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import static scuttle.model.Constants.CAMERA_OFFSET;
 import static scuttle.model.Constants.LANES_AHEAD;
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 import static scuttle.model.GameRules.COIN_GROUND_CHANCE;
 
 public class World {
@@ -18,21 +18,17 @@ public class World {
     private final Set<Position> coins = new HashSet<>();
     private final Random random = new Random();
     private int tickCounter;
-    private boolean gameOver;
-    private int score, furthestRow;
+    private boolean gameOver = false;
+    private int score;
+    private int furthestRow;
     private int coinsCollected;
     private final LaneGenerator generator = new LaneGenerator();
     private int cameraRow;
 
     public World() {
-        this.cameraRow = 0;
-        this.player = new Player(new Position(VISIBLE_COLUMNS / 2, 2));
+        this.player = new Player(new Position(VISIBLE_COLLUMNS / 2, 2));
         this.lanes = new ArrayList<>();
-        this.gameOver = false;
-        this.tickCounter = 0;
-        this.score = 0;
         this.furthestRow = player.getPosition().getRow();
-        this.coinsCollected = 0;
 
         generateAhead();
     }
@@ -55,7 +51,8 @@ public class World {
     }
 
     private Set<Position> reachableCells() {
-        return Reachability.reachable(lanes, List.of(player.getPosition()), cameraRow, lanes.size());
+        return Reachability.reachable(lanes, List.of(player.getPosition()),
+                cameraRow, lanes.size());
     }
 
     public int getCoinAmount() {
@@ -74,11 +71,10 @@ public class World {
         scatterCoinsOnRows(fromRow, lanes.size());
     }
 
-    private boolean canMoveTo(Position p) {
-        //TODO Helper method
-        return (p.getColumn() >= 0 && p.getColumn() < VISIBLE_COLUMNS) && (p.getRow() >= cameraRow
-                && p.getRow() < lanes.size())
-                && lanes.get(p.getRow()).canStepOn(p.getColumn());
+    private boolean canMoveTo(Position target) {
+        return target.getColumn() >= 0 && target.getColumn() < VISIBLE_COLLUMNS
+                && (target.getRow() >= cameraRow && target.getRow() < lanes.size())
+                && lanes.get(target.getRow()).canStepOn(target.getColumn());
     }
 
     public List<Lane> getLanes() {
@@ -101,12 +97,15 @@ public class World {
             cameraRow = Math.max(cameraRow, player.getPosition().getRow() - CAMERA_OFFSET);
             collectCoinAtPlayer();
             checkDeath();
+            if (!gameOver) {
+                int row = player.getPosition().getRow();
+                if (row > furthestRow) {
+                    score += row - furthestRow;
+                    furthestRow = row;
+                }
+            }
         }
-        int row = player.getPosition().getRow();
-        if (row > furthestRow) {
-            score += row - furthestRow;
-            furthestRow = row;
-        }
+
     }
 
     public void update() {
@@ -114,15 +113,18 @@ public class World {
             return;
         }
         tickCounter++;
-        if (lanes.get(player.getPosition().getRow()).drift(tickCounter) != 0) {
-            Position newPosition = new Position(player.getPosition().getColumn() + lanes.get(
-                    player.getPosition().getRow()).drift(
-                    tickCounter), player.getPosition().getRow());
+
+        Position position = player.getPosition();
+        Lane playerLane = lanes.get(position.getRow());
+        int drift = playerLane.drift(tickCounter);
+
+        if (drift != 0) {
+            Position newPosition = new Position(position.getColumn() + drift, position.getRow());
             player.move(newPosition, player.getFacing());
             collectCoinAtPlayer();
         }
-        for (Lane l: lanes) {
-            l.update(tickCounter);
+        for (Lane lane: lanes) {
+            lane.update(tickCounter);
         }
         checkDeath();
     }
@@ -140,7 +142,7 @@ public class World {
                 continue;
             }
             List<Integer> columns = new ArrayList<>();
-            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+            for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
                 if (reachable.contains(new Position(column, row))) {
                     columns.add(column);
                 }
@@ -165,7 +167,7 @@ public class World {
             if (lane.getType() != LaneType.GROUND) {
                 continue;
             }
-            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
+            for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
                 if (!reachable.contains(new Position(column, row))) {
                     continue;
                 }

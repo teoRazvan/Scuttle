@@ -1,7 +1,7 @@
 package scuttle.view;
 
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 
 public final class ViewConstants {
 
@@ -10,7 +10,7 @@ public final class ViewConstants {
 
     static final int TILE_SIZE = ORIGINAL_TILE_SIZE * SCALE;
 
-    static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE;
+    static final int SCREEN_WIDTH = VISIBLE_COLLUMNS * TILE_SIZE;
     static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE;
 
     private ViewConstants() {

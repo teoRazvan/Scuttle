@@ -4,5 +4,5 @@ public enum LaneType {
     GROUND,
     FISH,
     RAFT,
-    TORPEDO;
+    TORPEDO
 }

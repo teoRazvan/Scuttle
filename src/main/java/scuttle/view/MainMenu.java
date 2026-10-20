@@ -12,14 +12,14 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 import scuttle.model.CoinAmount;
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.HighScore;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 
 public class MainMenu extends JPanel {
 
     private static final int TILE_SIZE = 16 * 3;
-    private static final int SCREEN_WIDTH = VISIBLE_COLUMNS * TILE_SIZE;
+    private static final int SCREEN_WIDTH = VISIBLE_COLLUMNS * TILE_SIZE;
     private static final int SCREEN_HEIGHT = VISIBLE_ROWS * TILE_SIZE;
     private static final int MARGIN = 24;
 

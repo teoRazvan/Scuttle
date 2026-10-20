@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.GameRules.MAX_DANGER_STREAK;
 import static scuttle.model.GameRules.SAFE_START_LANES;
+import static scuttle.model.Constants.VISIBLE_COLLUMNS;
 
 public class LaneGeneratorTest {
 
@@ -37,7 +37,7 @@ public class LaneGeneratorTest {
             lanes.add(generator.next());
         }
         List<Position> starts = new ArrayList<>();
-        for (int i = 0; i < VISIBLE_COLUMNS; i++) {
+        for (int i = 0; i < VISIBLE_COLLUMNS; i++) {
             starts.add(new Position(i, 0));
         }
 
@@ -59,7 +59,7 @@ public class LaneGeneratorTest {
         for (int i = 0; i < SAFE_START_LANES; i++) {
             Lane lane = generator.next();
             assertEquals(LaneType.GROUND, lane.getType());
-            for (int j = 0; j < VISIBLE_COLUMNS; j++) {
+            for (int j = 0; j < VISIBLE_COLLUMNS; j++) {
                 assertTrue(lane.canStepOn(j));
             }
         }

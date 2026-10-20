@@ -5,17 +5,20 @@ import java.awt.image.BufferedImage;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 import static scuttle.view.ViewConstants.TILE_SIZE;
 
-public final class TileDrawer {
+final class TileDrawer {
 
+    //Two large primes so neighbouring get unrelated variants
+    private final static int HASH_PRIME_ROW = 19349663;
+    private final static int HASH_PRIME_COLUMN = 73856093;
     private final int cameraRow;
 
-    public TileDrawer(int cameraRow) {
+    TileDrawer(int cameraRow) {
         this.cameraRow = cameraRow;
     }
 
     static BufferedImage variant(BufferedImage[] variants, int column, int row) {
-        long randomHash = column * 73856093 ^ row * 19349663;
-        return variants[Math.floorMod(randomHash, variants.length)];
+        int hash = column * HASH_PRIME_COLUMN ^ row * HASH_PRIME_ROW;
+        return variants[Math.floorMod(hash, variants.length)];
     }
 
     void drawTile(Graphics2D g, BufferedImage image, int column, int row) {

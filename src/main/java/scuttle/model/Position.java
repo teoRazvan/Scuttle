@@ -15,17 +15,13 @@ public final class Position {
     public Position step(Direction direction) {
         return switch (direction) {
             case DOWN ->
-                new Position(this.getColumn(),
-                this.getRow() - 1);
+                new Position(column, row - 1);
             case UP ->
-                new Position(this.getColumn(),
-                this.getRow() + 1);
+                new Position(column, row + 1);
             case LEFT ->
-                new Position(this.getColumn() - 1,
-                this.getRow());
+                new Position(column - 1, row);
             case RIGHT ->
-                new Position(this.getColumn() + 1,
-                this.getRow());
+                new Position(column + 1, row);
         };
     }
 
@@ -46,13 +42,11 @@ public final class Position {
     public boolean equals(Object o) {
         if (o == this) {
             return true;
-        } else if (!(o instanceof Position)) {
+        } else if (!(o instanceof Position position)) {
             return false;
+        } else {
+            return this.column == position.getColumn() && this.row == position.getRow();
         }
-
-        Position p = (Position) o;
-
-        return this.column == p.getColumn() && this.row == p.getRow();
     }
 
     @Override
