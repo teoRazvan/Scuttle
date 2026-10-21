@@ -79,7 +79,7 @@ public final class WorldRenderer {
     private void drawPlayer(Graphics2D g, TileDrawer tiles, World world) {
         Player player = world.getPlayer();
         Position playerPosition = player.getPosition();
-        BufferedImage playerSprite = world.isGameOver() ? Sprites.CRAB_DEAD
+        BufferedImage playerSprite = world.isGameOver() ? Sprites.crabDead()
                 : Sprites.crab(player.getFacing());
         tiles.drawTile(g, playerSprite, playerPosition.getColumn(), playerPosition.getRow());
 

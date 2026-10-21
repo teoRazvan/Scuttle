@@ -1,7 +1,10 @@
 package scuttle.view;
 
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 import scuttle.model.Direction;
+import scuttle.model.Skins;
 
 public final class Sprites {
 
@@ -32,12 +35,7 @@ public final class Sprites {
     static final BufferedImage[] LAUNCHER_FIRE = loadVariants("torpedo_launcher_fire", 3);
     static final BufferedImage[] TORPEDO_BLAST_START = loadVariants("torpedo_blast_start", 2);
 
-    //player
-    static final BufferedImage CRAB_DEAD = GuiAssets.load("/sprites/crab_dead.png");
-    private static final BufferedImage CRAB_UP = GuiAssets.load("/sprites/crab_up.png");
-    private static final BufferedImage CRAB_DOWN = GuiAssets.load("/sprites/crab_down.png");
-    private static final BufferedImage CRAB_LEFT = GuiAssets.load("/sprites/crab_left.png");
-    private static final BufferedImage CRAB_RIGHT = GuiAssets.load("/sprites/crab_right.png");
+    private static final Map<String, CrabFrames> CRABS = new HashMap<>();
 
     //map edges
     static final BufferedImage[] EDGE_LEFT = loadVariants("edge_left", 2);
@@ -62,16 +60,66 @@ public final class Sprites {
     }
 
     static BufferedImage crab(Direction direction) {
-        return switch (direction) {
-            case UP ->
-                CRAB_UP;
-            case DOWN ->
-                CRAB_DOWN;
-            case RIGHT ->
-                CRAB_RIGHT;
-            case LEFT ->
-                CRAB_LEFT;
-        };
+        return frames(Skins.equippedId()).facing(direction);
+    }
+
+    static BufferedImage crabDead() {
+        return frames(Skins.equippedId()).dead;
+    }
+
+    static BufferedImage preview(String id) {
+        return frames(id).down;
+    }
+
+    private static CrabFrames frames(String id) {
+        return CRABS.computeIfAbsent(id, CrabFrames::load);
+    }
+
+    private static final class CrabFrames {
+
+        private final BufferedImage up;
+        private final BufferedImage down;
+        private final BufferedImage left;
+        private final BufferedImage right;
+        private final BufferedImage dead;
+
+        private CrabFrames(BufferedImage up, BufferedImage down, BufferedImage left,
+                BufferedImage right, BufferedImage dead) {
+            this.up = up;
+            this.down = down;
+            this.left = left;
+            this.right = right;
+            this.dead = dead;
+        }
+
+        private static CrabFrames load(String id) {
+            return new CrabFrames(
+                    pose(id, "up"),
+                    pose(id, "down"),
+                    pose(id, "left"),
+                    pose(id, "right"),
+                    pose(id, "dead"));
+        }
+
+        private static BufferedImage pose(String id, String pose) {
+            String path = Skins.DEFAULT_ID.equals(id)
+                    ? "/sprites/crab_" + pose + ".png"
+                    : "/skins/" + id + "/crab_" + pose + ".png";
+            return GuiAssets.load(path);
+        }
+
+        private BufferedImage facing(Direction direction) {
+            return switch (direction) {
+                case UP ->
+                    up;
+                case DOWN ->
+                    down;
+                case RIGHT ->
+                    right;
+                case LEFT ->
+                    left;
+            };
+        }
     }
 
 }

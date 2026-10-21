@@ -18,4 +18,12 @@ public final class CoinAmount {
         PREFS.putInt(COIN_KEY, getAmount() + value);
     }
 
+    public static boolean spend(int value) {
+        if (value <= 0 || getAmount() < value) {
+            return false;
+        }
+        PREFS.putInt(COIN_KEY, getAmount() - value);
+        return true;
+    }
+
 }

@@ -1,8 +1,10 @@
 package scuttle.view;
 
 import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -11,13 +13,18 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import static scuttle.view.ViewConstants.SCREEN_HEIGHT;
+import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
 public class GameWindow {
 
     private static final String MENU_CARD = "MENU";
+    private static final String SHOP_CARD = "SHOP";
     private static final String GAME_CARD = "GAME";
     private static final String TOGGLE_FULLSCREEN = "toggleFullscreen";
     private static final String EXIT_FULLSCREEN = "exitFullscreen";
+    private static final int MIN_WIDTH = SCREEN_WIDTH / 2;
+    private static final int MIN_HEIGHT = SCREEN_HEIGHT / 2;
     private boolean fullscreen;
 
     private final JFrame window;
@@ -33,12 +40,15 @@ public class GameWindow {
         cards = new CardLayout();
         root = new JPanel(cards);
         gamePanel = new GamePanel(this::showMenu);
-        MainMenu menu = new MainMenu(this::startGame, this::quit);
+        MainMenu menu = new MainMenu(this::startGame, this::showShop, this::quit);
+        ShopMenu shop = new ShopMenu(this::showMenu);
 
         root.add(menu, MENU_CARD);
+        root.add(shop, SHOP_CARD);
         root.add(gamePanel, GAME_CARD);
 
         window.add(root);
+        applyMinimumSize();
 
         var input = window.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         var actions = window.getRootPane().getActionMap();
@@ -83,10 +93,18 @@ public class GameWindow {
         } else {
             window.setResizable(true);
             window.pack();
+            applyMinimumSize();
             window.setLocationRelativeTo(null);
         }
 
         window.setVisible(visible);
+    }
+
+    private void applyMinimumSize() {
+        Insets insets = window.getInsets();
+        window.setMinimumSize(new Dimension(
+                MIN_WIDTH + insets.left + insets.right,
+                MIN_HEIGHT + insets.top + insets.bottom));
     }
 
     public void show() {
@@ -98,6 +116,10 @@ public class GameWindow {
 
     public void showMenu() {
         cards.show(root, MENU_CARD);
+    }
+
+    public void showShop() {
+        cards.show(root, SHOP_CARD);
     }
 
     public void startGame() {

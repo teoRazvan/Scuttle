@@ -10,7 +10,7 @@ public final class HudRenderer {
 
     private static final int HUD_SCALE = 4;
     private static final int HUD_X = 8;
-    private static final int HUD_Y = 8;
+    private static final int HUD_Y = 30;
     private static final int PANEL_WIDTH = 66;
     private static final int PANEL_HEIGHT = 30;
     private static final int TEXT_COLUMN = 17;
@@ -72,14 +72,21 @@ public final class HudRenderer {
     }
 
     void drawScore(Graphics2D g, int score, int coins) {
+        drawBanner(g, "Score: " + score, "Coins: " + coins);
+    }
+
+    void drawBest(Graphics2D g, int best, int coins) {
+        drawBanner(g, "Best: " + best, "Coins: " + coins);
+    }
+
+    private void drawBanner(Graphics2D g, String top, String bottom) {
         g.drawImage(Sprites.HUD_PANEL, HUD_X, HUD_Y, PANEL_WIDTH * HUD_SCALE, PANEL_HEIGHT
                 * HUD_SCALE, null);
 
-        drawShadowedText(g, "Score: " + score, HUD_X + TEXT_COLUMN * HUD_SCALE, HUD_Y
+        drawShadowedText(g, top, HUD_X + TEXT_COLUMN * HUD_SCALE, HUD_Y
                 + SCORE_BASELINE * HUD_SCALE, SCORE_COLOR);
-        drawShadowedText(g, "Coins: " + coins, HUD_X + TEXT_COLUMN * HUD_SCALE, HUD_Y
+        drawShadowedText(g, bottom, HUD_X + TEXT_COLUMN * HUD_SCALE, HUD_Y
                 + COINS_BASELINE * HUD_SCALE, COINS_COLOR);
-
     }
 
 }

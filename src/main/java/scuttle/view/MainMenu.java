@@ -2,7 +2,6 @@ package scuttle.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -17,8 +16,6 @@ import static scuttle.view.ViewConstants.*;
 
 public class MainMenu extends JPanel {
 
-    private static final Font BEST_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 22);
-    private static final Font COINS_FONT = new Font(Font.SANS_SERIF, Font.ITALIC, 22);
     private static final int MARGIN = 24;
 
     private final BufferedImage scene;
@@ -26,15 +23,16 @@ public class MainMenu extends JPanel {
     private final BufferedImage logo;
     private final JPanel buttons;
     private final ImageButton play;
-    private final ImageButton options;
+    private final ImageButton shop;
     private final ImageButton quit;
+    private final HudRenderer hudRenderer = new HudRenderer();
 
     private int crateX;
     private int crateY;
     private int crateWidth;
     private int crateHeight;
 
-    public MainMenu(Runnable onPlay, Runnable onQuit) {
+    public MainMenu(Runnable onPlay, Runnable onShop, Runnable onQuit) {
         scene = GuiAssets.menuScene();
         background = GuiAssets.menuBackground();
         logo = GuiAssets.menuLogo();
@@ -47,10 +45,11 @@ public class MainMenu extends JPanel {
         buttons.setOpaque(false);
 
         play = ImageButton.fromAssets(GuiAssets.PLAY);
-        options = ImageButton.fromAssets(GuiAssets.OPTIONS);
+        shop = ImageButton.fromAssets(GuiAssets.SHOP);
         quit = ImageButton.fromAssets(GuiAssets.QUIT);
 
         play.addActionListener(e -> onPlay.run());
+        shop.addActionListener(e -> onShop.run());
         quit.addActionListener(e -> onQuit.run());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -60,7 +59,7 @@ public class MainMenu extends JPanel {
         constraints.gridy = 0;
         buttons.add(play, constraints);
         constraints.gridy = 1;
-        buttons.add(options, constraints);
+        buttons.add(shop, constraints);
         constraints.gridy = 2;
         buttons.add(quit, constraints);
         add(buttons);
@@ -91,7 +90,7 @@ public class MainMenu extends JPanel {
 
         double buttonScale = (crateWidth * 0.55) / GuiAssets.BUTTON_WIDTH;
         play.applyScale(buttonScale);
-        options.applyScale(buttonScale);
+        shop.applyScale(buttonScale);
         quit.applyScale(buttonScale);
         buttons.doLayout();
     }
@@ -115,18 +114,22 @@ public class MainMenu extends JPanel {
         int logoWidth = Math.min(140, Math.max(80, getWidth() / 10));
         int logoHeight = logoWidth * logo.getHeight() / logo.getWidth();
         int logoX = getWidth() - logoWidth - 16;
-        int logoY = 12;
+        int logoY = 28;
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2.drawImage(logo, logoX, logoY, logoWidth, logoHeight, null);
 
-        g2.setFont(BEST_FONT);
-        g2.setColor(Color.WHITE);
-        g2.drawString("Best: " + HighScore.getBest(), 100, 28);
-
-        g2.setFont(COINS_FONT);
-        g2.setColor(Color.YELLOW);
-        g2.drawString("Coins: " + CoinAmount.getAmount(), 100, 50);
+        Graphics2D hud = (Graphics2D) g2.create();
+        try {
+            double scaleX = getWidth() <= 0 ? 1 : (double) getWidth() / SCREEN_WIDTH;
+            double scaleY = getHeight() <= 0 ? 1 : (double) getHeight() / SCREEN_HEIGHT;
+            hud.scale(scaleX, scaleY);
+            hud.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+            hudRenderer.drawBest(hud, HighScore.getBest(), CoinAmount.getAmount());
+        } finally {
+            hud.dispose();
+        }
     }
 
 }

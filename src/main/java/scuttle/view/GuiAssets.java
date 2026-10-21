@@ -11,6 +11,8 @@ final class GuiAssets {
 
     static final int BUTTON_WIDTH = 356;
     static final int BUTTON_HEIGHT = 140;
+    static final int BACK_ARROW_SIZE = 140;
+    private static final int BACK_ARROW_GAP = 20;
     private static final int ATLAS_X = 426;
     private static final int ATLAS_Y = 57;
 
@@ -26,12 +28,18 @@ final class GuiAssets {
     static final int PRESSED = 2;
 
     private static BufferedImage atlas;
+    private static BufferedImage shopAtlas;
+    private static BufferedImage[] backArrows;
 
     private GuiAssets() {
     }
 
     static BufferedImage menuBackground() {
         return load("/gui/menu_background.png");
+    }
+
+    static BufferedImage menuShopBackground() {
+        return load("/gui/menu_background_shop.png");
     }
 
     static BufferedImage menuScene() {
@@ -58,15 +66,39 @@ final class GuiAssets {
         return tinted;
     }
 
-    static BufferedImage button(int row, int col) {
-        if (atlas == null) {
-            atlas = load("/gui/NEW_BUTTONS.png");
+    static BufferedImage backArrow(int col) {
+        if (backArrows == null) {
+            BufferedImage sheet = load("/gui/back_arrow_states.png");
+            backArrows = new BufferedImage[3];
+            for (int i = 0; i < backArrows.length; i++) {
+                backArrows[i] = sheet.getSubimage(
+                        i * (BACK_ARROW_SIZE + BACK_ARROW_GAP), 0,
+                        BACK_ARROW_SIZE, BACK_ARROW_SIZE);
+            }
         }
-        return atlas.getSubimage(
+        return backArrows[col];
+    }
+
+    static BufferedImage button(int row, int col) {
+        BufferedImage source = atlasFor(row);
+        return source.getSubimage(
                 ATLAS_X + col * BUTTON_WIDTH,
                 ATLAS_Y + row * BUTTON_HEIGHT,
                 BUTTON_WIDTH,
                 BUTTON_HEIGHT);
+    }
+
+    private static BufferedImage atlasFor(int row) {
+        if (row == SHOP) {
+            if (shopAtlas == null) {
+                shopAtlas = load("/gui/NEW_BUTTONS_recolored.png");
+            }
+            return shopAtlas;
+        }
+        if (atlas == null) {
+            atlas = load("/gui/NEW_BUTTONS.png");
+        }
+        return atlas;
     }
 
     static BufferedImage scaleNearest(BufferedImage source, int width, int height) {
