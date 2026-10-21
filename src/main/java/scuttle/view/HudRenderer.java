@@ -26,9 +26,9 @@ public final class HudRenderer {
     private static final Color PAUSE_SHADE = new Color(0, 0, 0, 90);
     private static final Color GAME_OVER_COLOR = new Color(255, 0, 0, 255);
 
-    private static final Font HUD_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 6 * HUD_SCALE);
-    private static final Font TITLE_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 48);
-    private static final Font SUBTITLE_FONT = new Font(Font.SANS_SERIF, Font.BOLD, 24);
+    private static final Font HUD_FONT = GuiAssets.font(4 * HUD_SCALE);
+    private static final Font TITLE_FONT = GuiAssets.font(48);
+    private static final Font SUBTITLE_FONT = GuiAssets.font(24);
 
     private static final String GAME_OVER = "GAME OVER";
     private static final String PAUSED = "PAUSED";

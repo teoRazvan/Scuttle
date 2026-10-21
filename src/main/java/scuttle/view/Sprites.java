@@ -10,6 +10,16 @@ public final class Sprites {
 
     static final BufferedImage COIN = GuiAssets.load("/sprites/coin.png");
 
+    // shop buttons
+    static final BufferedImage[] PLAIN_BUTTON = {GuiAssets.load("/sprites/button_plain_idle.png"),
+        GuiAssets.load("/sprites/button_plain_hover.png"),
+        GuiAssets.load("/sprites/button_plain_pressed.png")};
+    static final BufferedImage[] BUY_BUTTON = {GuiAssets.load("/sprites/button_buy_idle.png"),
+        GuiAssets.load("/sprites/button_buy_hover.png"),
+        GuiAssets.load("/sprites/button_buy_pressed.png")};
+    static final BufferedImage EQUIPPED_BUTTON = GuiAssets.load("/sprites/button_equipped.png");
+    static final BufferedImage LOCKED_BUTTON = GuiAssets.load("/sprites/button_locked.png");
+
     //lanes
     static final BufferedImage[] SAND = loadVariants("sand", 3);
     static final BufferedImage[] CORAL = loadVariants("coral", 4);
@@ -120,6 +130,7 @@ public final class Sprites {
                     left;
             };
         }
+
     }
 
 }

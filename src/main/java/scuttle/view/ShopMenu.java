@@ -2,7 +2,6 @@ package scuttle.view;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -14,14 +13,17 @@ import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
 public class ShopMenu extends JPanel {
 
+    private static final double BACK_SIZE_FRACTION = 0.09;
     private static final int MARGIN = 24;
-    private static final int HEADER_HEIGHT = 92;
-    private static final int FOOTER_TOP = 305;
-    private static final int CRATE_HEIGHT = 336;
-    private static final int MARK_X = 18;
-    private static final int MARK_Y = 34;
-    private static final int MARK_WIDTH = 71;
-    private static final int MARK_HEIGHT = 90;
+
+    private static final int BOARD_X = 33;
+    private static final int BOARD_Y = 118;
+    private static final int BOARD_WIDTH = 216;
+    private static final int BOARD_HEIGHT = 186;
+    private static final int COINS_BASELINE = 112;
+    private static final int COINS_TEXT_SIZE = 8;
+    private static final int COIN_ICON_SIZE = 10;
+
     private static final Color COINS_COLOR = new Color(255, 214, 90);
     private static final Color SHADOW_COLOR = new Color(51, 50, 61);
 
@@ -31,6 +33,7 @@ public class ShopMenu extends JPanel {
     private final ImageButton back;
     private final SkinShelf shelf;
 
+    private double unit;
     private int crateX;
     private int crateY;
     private int crateWidth;
@@ -108,6 +111,7 @@ public class ShopMenu extends JPanel {
         crateHeight = (int) Math.round(background.getHeight() * scale);
         crateX = (getWidth() - crateWidth) / 2;
         crateY = (getHeight() - crateHeight) / 2;
+        unit = crateWidth / (double) background.getWidth();
     }
 
     private void layoutLogo() {
@@ -118,35 +122,27 @@ public class ShopMenu extends JPanel {
     }
 
     private void layoutBack() {
-        int markX = (int) Math.round(sceneX + MARK_X * sceneScale);
-        int markY = (int) Math.round(sceneY + MARK_Y * sceneScale);
-        int markW = (int) Math.round(MARK_WIDTH * sceneScale);
-        int markH = (int) Math.round(MARK_HEIGHT * sceneScale);
-        int size = Math.max(markW, markH);
+        int size = (int) (Math.min(getWidth(), getHeight()) * BACK_SIZE_FRACTION);
         double buttonScale = (double) size / GuiAssets.BACK_ARROW_SIZE;
-        back.applyScale(buttonScale);
+        back.applyScale((double) size / GuiAssets.BACK_ARROW_SIZE);
         size = (int) Math.round(GuiAssets.BACK_ARROW_SIZE * buttonScale);
-        back.setBounds(markX + (markW - size) / 2, markY + (markH - size) / 2, size, size);
+        back.setBounds(MARGIN, MARGIN, size, size);
     }
 
     private void layoutShelf() {
         if (crateWidth <= 0) {
             return;
         }
-        int headerBottom = crateY + crateHeight * HEADER_HEIGHT / CRATE_HEIGHT;
-        int footerTop = crateY + crateHeight * FOOTER_TOP / CRATE_HEIGHT;
-        int fontSize = Math.max(12, crateWidth / 18);
-        int top = headerBottom + fontSize + crateHeight / 16;
-        int innerX = crateX + crateWidth / 8;
-        int innerWidth = crateWidth * 3 / 4;
-        shelf.setBounds(innerX, top, innerWidth, Math.max(1, footerTop - top));
-        shelf.fit();
+        shelf.setBounds((int) Math.round(crateX + BOARD_X * unit), (int) Math.round(crateY
+                + BOARD_Y * unit),
+                (int) Math.round(BOARD_WIDTH * unit), (int) Math.round(BOARD_HEIGHT
+                * unit));
+        shelf.fit(unit);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        layoutScene();
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
@@ -164,15 +160,13 @@ public class ShopMenu extends JPanel {
 
     private void drawCoins(Graphics2D g) {
         String text = "Coins: " + CoinAmount.getAmount();
-        int fontSize = Math.max(12, crateWidth / 18);
-        g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
+        g.setFont(GuiAssets.font((float) (COINS_TEXT_SIZE * unit)));
         int textWidth = g.getFontMetrics().stringWidth(text);
-        int iconSize = g.getFontMetrics().getAscent();
+        int iconSize = (int) Math.round(COIN_ICON_SIZE * unit);
         int gap = Math.max(4, iconSize / 4);
         int rowWidth = iconSize + gap + textWidth;
         int x = crateX + (crateWidth - rowWidth) / 2;
-        int headerBottom = crateY + crateHeight * HEADER_HEIGHT / CRATE_HEIGHT;
-        int y = headerBottom + g.getFontMetrics().getAscent() + crateHeight / 40;
+        int y = (int) Math.round(crateY + COINS_BASELINE * unit);
         int iconY = y - iconSize;
 
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -181,7 +175,8 @@ public class ShopMenu extends JPanel {
 
         int textX = x + iconSize + gap;
         g.setColor(SHADOW_COLOR);
-        g.drawString(text, textX + 2, y + 2);
+        g.drawString(text, textX + (int) Math.round(COINS_TEXT_SIZE / 8.0),
+                y + (int) Math.round(COINS_TEXT_SIZE / 8.0));
         g.setColor(COINS_COLOR);
         g.drawString(text, textX, y);
     }

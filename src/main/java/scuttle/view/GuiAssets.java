@@ -1,5 +1,7 @@
 package scuttle.view;
 
+import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -30,6 +32,7 @@ final class GuiAssets {
     private static BufferedImage atlas;
     private static BufferedImage shopAtlas;
     private static BufferedImage[] backArrows;
+    private static final Font PIXEL_FONT = loadFont("/fonts/PressStart2P.ttf");
 
     private GuiAssets() {
     }
@@ -48,6 +51,21 @@ final class GuiAssets {
 
     static BufferedImage menuLogo() {
         return load("/gui/TUe-logo-scarlet-L.png");
+    }
+
+    static Font font(float size) {
+        return PIXEL_FONT.deriveFont(size);
+    }
+
+    private static Font loadFont(String path) {
+        try (InputStream in = GuiAssets.class.getResourceAsStream(path)) {
+            if (in == null) {
+                throw new IllegalArgumentException("Missing resource " + path);
+            }
+            return Font.createFont(Font.TRUETYPE_FONT, in);
+        } catch (FontFormatException | IOException e) {
+            throw new IllegalStateException("Could not load " + path, e);
+        }
     }
 
     static BufferedImage pauseIcon() {
