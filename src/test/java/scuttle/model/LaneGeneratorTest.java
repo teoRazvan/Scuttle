@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.GameRules.DIFFICULTY_RAMP_LANES;
 import static scuttle.model.GameRules.MAX_DANGER_STREAK;
 import static scuttle.model.GameRules.SAFE_START_LANES;
 
@@ -17,6 +18,7 @@ public class LaneGeneratorTest {
     private static final int LANE_COUNT = 2000;
     private static final int LONG_RUN_LANE_COUNT = 2000;
     private static final long SEED = 42;
+    private static final double DELTA = 1e-9;
 
     @Test
     public void sameSeedGivesSameLanes() {
@@ -99,6 +101,30 @@ public class LaneGeneratorTest {
             }
             previousDirection = currentDirection;
         }
+    }
+
+    @Test
+    public void difficultyRampsUpAndIsCapped() {
+        LaneGenerator generator = new LaneGenerator(new Random(SEED));
+        assertEquals(0.0, generator.difficulty(), DELTA);
+        for (int i = 0; i < DIFFICULTY_RAMP_LANES; i++) {
+            generator.next();
+        }
+        assertEquals(1.0, generator.difficulty(), DELTA);
+        for (int i = 0; i < 100; i++) {
+            generator.next();
+        }
+        assertEquals(1.0, generator.difficulty(), DELTA);
+
+    }
+
+    @Test
+    public void difficultyIsHalfwayAtHalfTheRamp() {
+        LaneGenerator generator = new LaneGenerator(new Random(SEED));
+        for (int i = 0; i < DIFFICULTY_RAMP_LANES / 2; i++) {
+            generator.next();
+        }
+        assertEquals(0.5, generator.difficulty(), DELTA);
     }
 
 }
