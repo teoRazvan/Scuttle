@@ -19,6 +19,8 @@ jobs:
             package: Windows
           - os: ubuntu-latest
             package: Linux
+          - os: macos-latest
+            package: macOS
 
     runs-on: ${{ matrix.os }}
 
@@ -40,7 +42,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p package-input
-          cp target/test-1.0-SNAPSHOT.jar package-input/
+          cp target/scuttle-1.0-SNAPSHOT.jar package-input/
 
       - name: Package application
         run: >
@@ -48,7 +50,7 @@ jobs:
           --type app-image
           --name Scuttle
           --input package-input
-          --main-jar test-1.0-SNAPSHOT.jar
+          --main-jar scuttle-1.0-SNAPSHOT.jar
           --main-class scuttle.view.Scuttle
           --dest dist
 
@@ -61,7 +63,11 @@ jobs:
       - name: Create Linux archive
         if: runner.os == 'Linux'
         run: tar -czf Scuttle-Linux.tar.gz -C dist Scuttle
-
+        
+      - name: Create macOS ZIP
+        if: runner.os == 'macOS'
+        run: ditto -c -k --keepParent dist/Scuttle.app Scuttle-macOS.zip
+        
       - name: Upload Windows package
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v7
@@ -76,4 +82,12 @@ jobs:
         with:
           name: Scuttle-Linux
           path: Scuttle-Linux.tar.gz
+          if-no-files-found: error
+          
+      - name: Upload Windows package
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Scuttle-macOS
+          path: Scuttle-macOS.zip
           if-no-files-found: error
