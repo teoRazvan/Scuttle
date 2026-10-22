@@ -150,6 +150,9 @@ Our two advanced topics are **procedural generation with BFS validation** and **
 ## 7. Credits
 * **Font:** "Press Start 2P" by CodeMan38, licensed under the SIL Open Font License 1.1 (licence included in `src/main/resources/fonts/`).
 * **Graphics:** the pixel-art sprites were generated with AI, as approved by our tutor at the start of the project. All code was written by us.
+* **Menu/Shop Background:** https://runicpixels.artstation.com/projects/rJvPEG.
+* **Menu/Shop Buttons:** https://github.com/KaarinGaming/PlatformerTutorial/blob/ep_12/PlatformerTutorial/res/button_atlas.png.
+* **Menu/Shop Atlas:** https://github.com/KaarinGaming/PlatformerTutorial/blob/ep_12/PlatformerTutorial/res/menu_background.png.
 
 ## 8. Known limitations
 * On 4:3 screens the game is slightly stretched.
