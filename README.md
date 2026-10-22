@@ -2,7 +2,7 @@
 
 An endless underwater arcade game made in Java Swing: guide a crab across procedurally generated lanes of coral, fish, jellyfish and torpedoes.
 
-CBL project for 2IP90 Programming, TU/e, 2026–2027, by Teo Ene and Andrei ____.
+CBL project for 2IP90 Programming, TU/e, 2026–2027, by Teo Ene and Andrei Liță.
 
 <img width="1919" height="1079" alt="Scuttle gameplay" src="https://github.com/user-attachments/assets/ad245eef-8e8e-4670-825b-305152739a6e" />
 

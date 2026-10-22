@@ -18,7 +18,7 @@ public final class Skins {
     private static final String EQUIPPED_KEY = "equipped";
 
     public static final List<Entry> ALL = List.of(
-            new Entry(DEFAULT_ID, "Default"),
+            new Entry(DEFAULT_ID, "Scuttle"),
             new Entry("bjorn_snapson", "Bjorn Snapson"),
             new Entry("captain_pinch", "Captain Pinch"),
             new Entry("chef_bisque", "Chef Bisque"),
