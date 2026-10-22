@@ -62,5 +62,5 @@
             </plugin>
         </plugins>
     </build>
-
+    <name>Scuttle</name>
 </project>
