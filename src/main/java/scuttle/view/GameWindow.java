@@ -16,6 +16,10 @@ import javax.swing.KeyStroke;
 import static scuttle.view.ViewConstants.SCREEN_HEIGHT;
 import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
+/**
+ * The main window. It switches between the menu, the shop and the game with a CardLayout, and
+ * handles fullscreen (F11 on, F10 off).
+ */
 public class GameWindow {
 
     private static final String MENU_CARD = "MENU";

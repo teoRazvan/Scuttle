@@ -2,6 +2,10 @@ package scuttle.model;
 
 import java.util.Objects;
 
+/**
+ * An immutable (column, row) cell on the grid. Row 0 is the bottom, and rows grow upward. It
+ * overrides equals/hashCode so it can be used in sets (the BFS and the coins).
+ */
 public final class Position {
 
     private final int column;

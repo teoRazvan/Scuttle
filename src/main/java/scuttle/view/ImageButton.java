@@ -7,6 +7,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 
+/**
+ * A JButton drawn with pixel-art images for its idle, hover and pressed states, scaled without
+ * blurring.
+ */
 class ImageButton extends JButton {
 
     private BufferedImage idle;

@@ -21,9 +21,8 @@ import scuttle.model.World;
 import static scuttle.view.ViewConstants.*;
 
 /**
- *
- * Game panel is the drawing surface
- *
+ * The game screen. A Swing timer calls controller.tick() every TICK_DELAY ms and repaints. On top
+ * of the world it shows the HUD, the pause button, and the pause and game-over overlays.
  */
 @SuppressWarnings("serial")
 public class GamePanel extends JPanel implements ActionListener {
@@ -206,8 +205,8 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * The overlays are stacked on top of each other, and that tells Swing to repaint all the layers
-     * instead of assuming they don't overlap
+     * Returns false because the overlays sit on top of each other. This tells Swing to repaint the
+     * layers in the right order.
      */
     @Override
     public boolean isOptimizedDrawingEnabled() {

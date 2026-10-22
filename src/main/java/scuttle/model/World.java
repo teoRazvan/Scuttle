@@ -8,9 +8,14 @@ import java.util.Random;
 import java.util.Set;
 import static scuttle.model.Constants.CAMERA_OFFSET;
 import static scuttle.model.Constants.LANES_AHEAD;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.GameRules.COIN_GROUND_CHANCE;
 
+/**
+ * It holds the whole game state: the player, the lanes, the coins, the score and the camera
+ * position. It also applies the game rules (moving, drifting with jellyfish, dying, collecting
+ * coins). It has no Swing code, so it can be tested on its own.
+ */
 public class World {
 
     private final Player player;
@@ -26,7 +31,7 @@ public class World {
     private int cameraRow;
 
     public World() {
-        this.player = new Player(new Position(VISIBLE_COLLUMNS / 2, 2));
+        this.player = new Player(new Position(VISIBLE_COLUMNS / 2, 2));
         this.lanes = new ArrayList<>();
         this.furthestRow = player.getPosition().getRow();
 
@@ -72,7 +77,7 @@ public class World {
     }
 
     private boolean canMoveTo(Position target) {
-        return target.getColumn() >= 0 && target.getColumn() < VISIBLE_COLLUMNS
+        return target.getColumn() >= 0 && target.getColumn() < VISIBLE_COLUMNS
                 && (target.getRow() >= cameraRow && target.getRow() < lanes.size())
                 && lanes.get(target.getRow()).canStepOn(target.getColumn());
     }
@@ -85,6 +90,7 @@ public class World {
         return player;
     }
 
+    // We do player movement through world so we can also manage the camera and generate new lanes.
     public void movePlayer(Direction movementDirection) {
         if (gameOver) {
             return;
@@ -142,7 +148,7 @@ public class World {
                 continue;
             }
             List<Integer> columns = new ArrayList<>();
-            for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
+            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
                 if (reachable.contains(new Position(column, row))) {
                     columns.add(column);
                 }
@@ -167,7 +173,7 @@ public class World {
             if (lane.getType() != LaneType.GROUND) {
                 continue;
             }
-            for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
+            for (int column = 0; column < VISIBLE_COLUMNS; column++) {
                 if (!reachable.contains(new Position(column, row))) {
                     continue;
                 }

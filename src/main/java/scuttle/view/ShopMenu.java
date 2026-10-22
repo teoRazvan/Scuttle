@@ -11,6 +11,11 @@ import scuttle.model.CoinAmount;
 import static scuttle.view.ViewConstants.SCREEN_HEIGHT;
 import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
+/**
+ * The shop screen: the crate background, the coin total, the back button and the skin shelf.
+ * Everything is measured in the crate image’s pixels and multiplied by unit, so the layout scales
+ * with the window.
+ */
 public class ShopMenu extends JPanel {
 
     private static final double BACK_SIZE_FRACTION = 0.09;

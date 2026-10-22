@@ -5,7 +5,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
 public class FishLaneTest {
 
@@ -38,7 +38,7 @@ public class FishLaneTest {
 
     @Test
     public void canAlwaysStepOn() {
-        for (int i = 0; i < VISIBLE_COLLUMNS; i++) {
+        for (int i = 0; i < VISIBLE_COLUMNS; i++) {
             assertTrue(lane.canStepOn(i), "column " + i);
         }
     }

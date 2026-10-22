@@ -2,7 +2,7 @@ package scuttle.view;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import scuttle.model.FishLane;
 import scuttle.model.GroundLane;
 import scuttle.model.Lane;
@@ -11,6 +11,9 @@ import scuttle.model.RaftLane;
 import scuttle.model.TorpedoLane;
 import static scuttle.model.TorpedoLane.LAUNCHER_COLUMN;
 
+/**
+ * Draws each kind of lane with its sprites. It uses a pattern-matching switch on the lane’s class.
+ */
 final class LaneRenderer {
 
     private static final int JET_FRAME_TICKS = 3;
@@ -41,7 +44,7 @@ final class LaneRenderer {
     }
 
     private void drawGroundLane(Graphics2D g, TileDrawer tiles, GroundLane lane, int row) {
-        for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
             tiles.drawTile(g, TileDrawer.variant(Sprites.SAND, column, row), column, row);
             if (!lane.canStepOn(column)) {
                 tiles.drawTile(g, TileDrawer.variant(Sprites.CORAL, column, row), column, row);
@@ -74,7 +77,7 @@ final class LaneRenderer {
     }
 
     private void drawFishLane(Graphics2D g, TileDrawer tiles, FishLane lane, int row) {
-        for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
             tiles.drawTile(g, TileDrawer.variant(Sprites.TATTERED, column, row), column, row);
         }
 
@@ -94,7 +97,7 @@ final class LaneRenderer {
     }
 
     private void drawRaftLane(Graphics2D g, TileDrawer tiles, RaftLane lane, int row) {
-        for (int column = 0; column < VISIBLE_COLLUMNS; column++) {
+        for (int column = 0; column < VISIBLE_COLUMNS; column++) {
             tiles.drawTile(g, TileDrawer.variant(Sprites.CHASM, column, row), column, row);
         }
         for (Mover m: lane.getMovers()) {
@@ -127,7 +130,7 @@ final class LaneRenderer {
 
     private void drawTorpedoLane(Graphics2D g, TileDrawer tiles, TorpedoLane lane, int row,
             int frame) {
-        for (int column = 1; column < VISIBLE_COLLUMNS; column++) {
+        for (int column = 1; column < VISIBLE_COLUMNS; column++) {
             tiles.drawTile(g, TileDrawer.variant(Sprites.TORPEDO_TRACK, column, row), column, row);
             if (lane.isWarning() && (frame / HAZARD_BLINK_TICKS) % 2 == 0) {
                 tiles.drawTile(g, Sprites.TORPEDO_HAZARD, column, row);

@@ -1,5 +1,10 @@
 package scuttle.model;
 
+/**
+ * All the tuning numbers for generation. Three groups: fixed rules, the EASY values (used at
+ * difficulty 0), and the HARD values (used at full difficulty). LaneGenerator.scaled blends between
+ * them.
+ */
 public final class GameRules {
 
     // Fixed rules

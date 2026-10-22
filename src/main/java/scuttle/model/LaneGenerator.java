@@ -7,9 +7,15 @@ import java.util.Random;
 import java.util.Set;
 import static scuttle.model.Constants.HIDDEN_MARGIN;
 import static scuttle.model.Constants.LANE_WIDTH;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.GameRules.*;
 
+/**
+ * It creates the endless stream of lanes, one at a time. Each new lane is random, but it’s
+ * guaranteed to be crossable: it remembers which cells of the previous lane the player can reach
+ * (the frontier) and checks the new lane against them with BFS. Lanes get harder as more are made.
+ *
+ */
 public class LaneGenerator {
 
     private Lane previousLane;
@@ -25,24 +31,48 @@ public class LaneGenerator {
         this(new Random());
     }
 
+    /**
+     * Creates a generator that uses the given random source.
+     *
+     * Passing a Random with a fixed seed gives the same map every time so we can test behavior.
+     *
+     * @param random a known Random.
+     */
     public LaneGenerator(Random random) {
         this.random = random;
         this.lanesMade = 0;
         this.dangerStreak = 0;
     }
 
+    /**
+     * Returns how far the difficulty has ramped up, as a number from 0 to 1. It’s 0 at the start,
+     * grows evenly with each lane made, and stays at 1 after DIFFICULTY_RAMP_LANES lanes.
+     *
+     * @return
+     */
     double difficulty() {
         return Math.min(1.0, lanesMade / (double) DIFFICULTY_RAMP_LANES);
     }
 
+    /**
+     * Returns a game-rule value for the current difficulty, by going from the easy value to the
+     * hard value in a straight line, rounded to an int.
+     *
+     * @param easy the value at difficulty 0.
+     * @param hard the value at difficulty 1.
+     * @return the value at the current difficulty.
+     */
     int scaled(int easy, int hard) {
         return (int) Math.round(easy + (hard - easy) * difficulty());
     }
 
+    /* Runs BFS over two lanes the previous one (row 0) and the new one (row 1).
+    An empty result means a bllocked lane
+     */
     private Set<Position> computeFrontier(Lane newLane) {
         if (previousLane == null) {
             List<Position> firstRow = new ArrayList<>();
-            for (int i = 0; i < VISIBLE_COLLUMNS; i++) {
+            for (int i = 0; i < VISIBLE_COLUMNS; i++) {
                 firstRow.add(new Position(i, 0));
             }
             return Reachability.reachable(List.of(newLane), firstRow, 0, 1);
@@ -59,7 +89,7 @@ public class LaneGenerator {
     }
 
     private GroundLane makePlainGround() {
-        CellType[] cellType = new CellType[VISIBLE_COLLUMNS];
+        CellType[] cellType = new CellType[VISIBLE_COLUMNS];
         for (int i = 0; i < cellType.length; i++) {
             cellType[i] = CellType.FREE;
         }
@@ -99,6 +129,7 @@ public class LaneGenerator {
 
     }
 
+    // Adjecent MoverLanes always have opposite directions so the game is fair
     private int nextDirection() {
         if (previousType == LaneType.FISH || previousType == LaneType.RAFT) {
             previousDirection = -previousDirection;
@@ -160,7 +191,7 @@ public class LaneGenerator {
 
     private GroundLane makeGround() {
         GroundLane groundLane;
-        CellType[] cellType = new CellType[VISIBLE_COLLUMNS];
+        CellType[] cellType = new CellType[VISIBLE_COLUMNS];
         int coralChance = scaled(CORAL_CHANCE_EASY, CORAL_CHANCE_HARD);
         for (int i = 0; i < cellType.length; i++) {
             int roll = random.nextInt(100);
@@ -209,7 +240,9 @@ public class LaneGenerator {
         int maxIdleTicks = scaled(MAX_TORPEDO_IDLE_TICKS_EASY, MAX_TORPEDO_IDLE_TICKS_HARD);
 
         int idle = randomBetween(minIdleTicks, maxIdleTicks);
-
+        /* The last argument, randomBetween(1, idle), is the starting delay. It’s random so that
+        torpedo lanes don’t all fire at the same moment.
+         */
         return new TorpedoLane(idle, TORPEDO_WARNING_TICKS, TORPEDO_FIRING_TICKS,
                 randomBetween(1, idle));
     }

@@ -1,5 +1,9 @@
 package scuttle.model;
 
+/**
+ * A launcher on the left fires a water jet across the whole lane. It cycles IDLE → WARNING → FIRING
+ * → IDLE, and the whole lane is deadly while firing. The launcher cell is solid.
+ */
 public class TorpedoLane extends Lane {
 
     // The Launcher sits in this column and blocks movement
@@ -17,6 +21,13 @@ public class TorpedoLane extends Lane {
         FIRING;
     }
 
+    /**
+     * @param idleTicks how long idle phase lasts,
+     * @param warningTicks how long warning phase lasts,
+     * @param firingTicks how long firing phase lasts,
+     * @param initialDelay ticks before the first warning, random so the lanes don’t fire in sync.
+     * @throws IllegalArgumentException if any of them is below 1.
+     */
     public TorpedoLane(int idleTicks, int warningTicks, int firingTicks, int initialDelay) {
         super(LaneType.TORPEDO);
         if (warningTicks < 1 || firingTicks < 1 || idleTicks < 1) {
@@ -58,17 +69,14 @@ public class TorpedoLane extends Lane {
                 case IDLE -> {
                     phase = Phase.WARNING;
                     phaseTimer = warningTicks;
-                    break;
                 }
                 case WARNING -> {
                     phase = Phase.FIRING;
                     phaseTimer = firingTicks;
-                    break;
                 }
                 case FIRING -> {
                     phase = Phase.IDLE;
                     phaseTimer = idleTicks;
-                    break;
                 }
             }
         }

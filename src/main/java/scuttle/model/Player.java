@@ -1,5 +1,8 @@
 package scuttle.model;
 
+/**
+ * The crab: its current cell and the direction it faces (used to pick the sprite).
+ */
 public final class Player {
 
     private Position position;

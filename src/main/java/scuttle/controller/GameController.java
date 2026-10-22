@@ -5,6 +5,11 @@ import scuttle.model.Direction;
 import scuttle.model.HighScore;
 import scuttle.model.World;
 
+/**
+ * Connects the input and the game loop to the model. It owns the current World, handles pausing and
+ * restarting, and saves the score and coins once a game ends. It has no Swing code, so it can be
+ * tested without a window.
+ */
 public class GameController implements GameInput {
 
     private World world;
@@ -49,6 +54,9 @@ public class GameController implements GameInput {
         }
     }
 
+    /* Starts a new game straight away, whatever the current state. Used by restart()
+    and when returning to a fresh game from the menu.
+     */
     public void reset() {
         world = new World();
         paused = false;

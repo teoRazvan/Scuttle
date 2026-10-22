@@ -5,6 +5,9 @@ import java.awt.event.KeyListener;
 import scuttle.controller.GameInput;
 import scuttle.model.Direction;
 
+/**
+ * Turns key presses into GameInput calls: arrows/WASD to move, R to restart, Esc to pause.
+ */
 class KeyHandler implements KeyListener {
 
     private final GameInput gameInput;
@@ -57,7 +60,7 @@ class KeyHandler implements KeyListener {
             case KeyEvent.VK_ESCAPE -> {
                 gameInput.togglePause();
             }
-            default -> {/*other input is ignored*/
+            default -> {// Other input is ignored
             }
         }
 
@@ -76,7 +79,7 @@ class KeyHandler implements KeyListener {
                 leftHeld = false;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT ->
                 rightHeld = false;
-            default -> {/*other keys are ignored*/
+            default -> {// Other keys are ignored
             }
         }
     }

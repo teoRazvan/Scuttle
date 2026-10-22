@@ -6,19 +6,37 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
+/**
+ * It’s a helper class that checks which cells the player can walk to, using BFS. The lane generator
+ * uses it to make sure every lane is crossable, and that it’s also used to place coins.
+ *
+ */
 public final class Reachability {
 
     private Reachability() {
     }
 
+    /**
+     * It returns every cell the player can reach from the start cells, moving up/down/left/right
+     * and only through cells where the lane’s canStepOn() is true.
+     *
+     * @param lanes the lanes of the world, indexed by row.
+     * @param starts the cells to start searching from.
+     * @param fromRow the first row the search may visit (inclusive).
+     * @param toRow the row where the search stops (exclusive the row itself is not visited).
+     * @return the set of all reachable cells, including the valid start cells.
+     */
     public static Set<Position> reachable(List<Lane> lanes, Collection<Position> starts,
             int fromRow, int toRow) {
         Set<Position> visited = new HashSet<>();
         Queue<Position> queue = new ArrayDeque<>();
         for (Position start: starts) {
             if (!visited.contains(start) && isOpen(lanes, start, fromRow, toRow)) {
+                /* We mark the cells as visited when we add them to the queue so that
+                we don't have duplicates
+                 */
                 visited.add(start);
                 queue.add(start);
             }
@@ -37,7 +55,7 @@ public final class Reachability {
     }
 
     private static boolean isOpen(List<Lane> lanes, Position position, int fromRow, int toRow) {
-        return position.getColumn() >= 0 && position.getColumn() < VISIBLE_COLLUMNS
+        return position.getColumn() >= 0 && position.getColumn() < VISIBLE_COLUMNS
                 && position.getRow() >= fromRow && position.getRow() < toRow
                 && lanes.get(position.getRow()).canStepOn(position.getColumn());
     }

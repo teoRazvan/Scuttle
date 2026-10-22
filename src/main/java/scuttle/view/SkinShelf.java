@@ -10,6 +10,10 @@ import javax.swing.SwingConstants;
 import scuttle.model.CoinAmount;
 import scuttle.model.Skins;
 
+/**
+ * The grid of skin cards inside the shop. The last row is centred when it isn’t full. SkinCard is
+ * one card: portrait, name, and a button showing BUY / EQUIP / UNEQUIP / locked.
+ */
 class SkinShelf extends JPanel {
 
     private static final int CELL_WIDTH = 54;

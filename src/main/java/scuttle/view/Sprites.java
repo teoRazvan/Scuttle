@@ -6,6 +6,9 @@ import java.util.Map;
 import scuttle.model.Direction;
 import scuttle.model.Skins;
 
+/**
+ * Load all images (and the font) once from resources.
+ */
 public final class Sprites {
 
     static final BufferedImage COIN = GuiAssets.load("/sprites/coin.png");

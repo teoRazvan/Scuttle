@@ -14,6 +14,9 @@ import scuttle.model.CoinAmount;
 import scuttle.model.HighScore;
 import static scuttle.view.ViewConstants.*;
 
+/**
+ * The start screen with PLAY, SHOP and QUIT. It also shows the best score and the total coins.
+ */
 public class MainMenu extends JPanel {
 
     private static final int MARGIN = 24;

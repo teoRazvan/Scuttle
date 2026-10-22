@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * It’s the shared parent for lanes with things moving across them (fish and jellyfish). It stores
+ * the movers, their speed and their direction, and moves them every ticksPerStep ticks.
+ */
 public abstract class MoverLane extends Lane {
 
     private final List<Mover> movers;
     private final int ticksPerStep;//ticks in between each update
-    private final int direction;// 1 || -1 determines in which direction a fish moves
+    private final int direction;// 1 || -1 determines in which direction a mover moves
 
     protected MoverLane(LaneType type, List<Mover> movers, int ticksPerStep, int direction) {
         super(type);
@@ -32,6 +36,7 @@ public abstract class MoverLane extends Lane {
         return false;
     }
 
+    // Movers only step on ticks that divide evenly by ticksPerStep
     boolean isMoveTick(int tick) {
         return tick % ticksPerStep == 0;
     }

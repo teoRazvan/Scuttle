@@ -5,7 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.RadialGradientPaint;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 import static scuttle.model.Constants.VISIBLE_ROWS;
 import scuttle.model.Lane;
 import scuttle.model.Player;
@@ -15,6 +15,10 @@ import scuttle.model.World;
 import static scuttle.view.ViewConstants.SCREEN_HEIGHT;
 import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
+/**
+ * Draws one frame of the world: lanes, edges, coins, the player, then the underwater tint and
+ * vignette on top.
+ */
 public final class WorldRenderer {
 
     private static final Color VIGNETTE_EDGE = new Color(0, 15, 45, 170);
@@ -22,7 +26,8 @@ public final class WorldRenderer {
     private static final Color UNDERWATER_TINT = new Color(10, 60, 140, 85);
     private static final float VIGNETTE_RADIUS_FACTOR = 0.6f;
     private static final float VIGNETTE_CLEAR_UNTIL = 0.35f;
-
+    /* A radial gradient that is fully transparent up to VIGNETTE_CLEAR_UNTIL of the
+    radius and darkens towards the edges.*/
     private final RadialGradientPaint vignette;
     private final LaneRenderer laneRenderer = new LaneRenderer();
 
@@ -42,14 +47,15 @@ public final class WorldRenderer {
     private void drawEdges(Graphics2D g, TileDrawer tiles, int cameraRow, int row) {
         if (row == cameraRow) {
             tiles.drawTile(g, Sprites.EDGE_CORNER_LEFT, 0, row);
-            tiles.drawTile(g, Sprites.EDGE_CORNER_RIGHT, VISIBLE_COLLUMNS - 1, row);
-            for (int column = 1; column < VISIBLE_COLLUMNS - 1; column++) {
-                tiles.drawTile(g, tiles.variant(Sprites.EDGE_BOTTOM, column, row), column, row);
+            tiles.drawTile(g, Sprites.EDGE_CORNER_RIGHT, VISIBLE_COLUMNS - 1, row);
+            for (int column = 1; column < VISIBLE_COLUMNS - 1; column++) {
+                tiles.drawTile(g, TileDrawer.variant(Sprites.EDGE_BOTTOM, column, row),
+                        column, row);
             }
         } else {
-            tiles.drawTile(g, tiles.variant(Sprites.EDGE_LEFT, 0, row), 0, row);
-            tiles.drawTile(g, tiles.variant(Sprites.EDGE_RIGHT, VISIBLE_COLLUMNS - 1, row),
-                    VISIBLE_COLLUMNS - 1, row);
+            tiles.drawTile(g, TileDrawer.variant(Sprites.EDGE_LEFT, 0, row), 0, row);
+            tiles.drawTile(g, TileDrawer.variant(Sprites.EDGE_RIGHT, VISIBLE_COLUMNS - 1, row),
+                    VISIBLE_COLUMNS - 1, row);
         }
     }
 

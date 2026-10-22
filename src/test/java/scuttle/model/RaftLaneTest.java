@@ -4,7 +4,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
 public class RaftLaneTest {
 
@@ -39,7 +39,7 @@ public class RaftLaneTest {
     public void offScreenIsDeadly() {
         assertAll("Lane is safe where raft is",
                 () -> assertTrue(lane.isDeadly(-1)),
-                () -> assertTrue(lane.isDeadly(VISIBLE_COLLUMNS))
+                () -> assertTrue(lane.isDeadly(VISIBLE_COLUMNS))
         );
     }
 

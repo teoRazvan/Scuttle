@@ -6,6 +6,9 @@ import java.awt.Graphics2D;
 import static scuttle.view.ViewConstants.SCREEN_HEIGHT;
 import static scuttle.view.ViewConstants.SCREEN_WIDTH;
 
+/**
+ * Draws the score and coin panels and the overlay texts.
+ */
 public final class HudRenderer {
 
     private static final int HUD_SCALE = 4;

@@ -3,7 +3,7 @@ package scuttle.model;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
 public class TorpedoLaneTest {
 
@@ -32,7 +32,7 @@ public class TorpedoLaneTest {
 
     @Test
     public void otherColumnsAreWalkable() {
-        for (int i = TorpedoLane.LAUNCHER_COLUMN + 2; i < VISIBLE_COLLUMNS; i++) {
+        for (int i = TorpedoLane.LAUNCHER_COLUMN + 2; i < VISIBLE_COLUMNS; i++) {
             assertTrue(lane.canStepOn(i), "column " + i);
         }
     }
@@ -61,7 +61,7 @@ public class TorpedoLaneTest {
     @Test
     public void deadlyEverywhereWhileFiring() {
         advance(INITIAL_DELAY + WARNING_TICKS);
-        for (int i = TorpedoLane.LAUNCHER_COLUMN + 1; i < VISIBLE_COLLUMNS; i++) {
+        for (int i = TorpedoLane.LAUNCHER_COLUMN + 1; i < VISIBLE_COLUMNS; i++) {
             assertTrue(lane.isDeadly(i), "column " + i);
         }
     }

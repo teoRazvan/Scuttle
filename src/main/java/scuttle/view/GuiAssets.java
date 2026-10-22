@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
 
+/**
+ * Load all images (and the font) once from resources.
+ */
 final class GuiAssets {
 
     static final int BUTTON_WIDTH = 356;
@@ -19,7 +22,6 @@ final class GuiAssets {
     private static final int ATLAS_Y = 57;
 
     static final int PLAY = 0;
-    static final int OPTIONS = 1;
     static final int QUIT = 2;
     static final int SHOP = 3;
     static final int MENU = 4;

@@ -2,6 +2,11 @@ package scuttle.model;
 
 import java.util.prefs.Preferences;
 
+/**
+ * Data saved with Java preferences so that they are kept between sessions.
+ *
+ * It remembers the amount of coins the player has.
+ */
 public final class CoinAmount {
 
     private static final Preferences PREFS = Preferences.userNodeForPackage(CoinAmount.class);

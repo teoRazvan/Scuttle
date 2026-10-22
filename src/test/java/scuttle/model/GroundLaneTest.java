@@ -3,7 +3,7 @@ package scuttle.model;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static scuttle.model.Constants.VISIBLE_COLLUMNS;
+import static scuttle.model.Constants.VISIBLE_COLUMNS;
 
 public class GroundLaneTest {
 
@@ -16,8 +16,8 @@ public class GroundLaneTest {
 
     @BeforeEach
     public void setup() {
-        cellArray = new CellType[VISIBLE_COLLUMNS];
-        for (int i = 0; i < VISIBLE_COLLUMNS; i++) {
+        cellArray = new CellType[VISIBLE_COLUMNS];
+        for (int i = 0; i < VISIBLE_COLUMNS; i++) {
             cellArray[i] = CellType.FREE;
         }
         cellArray[CORAL_COLUMN] = CellType.CORAL;
@@ -36,7 +36,7 @@ public class GroundLaneTest {
 
     @Test
     public void isNeverDeadly() {
-        for (int i = 0; i < VISIBLE_COLLUMNS; i++) {
+        for (int i = 0; i < VISIBLE_COLUMNS; i++) {
             assertFalse(groundLane.isDeadly(i), "Column " + i);
         }
     }

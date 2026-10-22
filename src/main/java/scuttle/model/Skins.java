@@ -3,6 +3,11 @@ package scuttle.model;
 import java.util.List;
 import java.util.prefs.Preferences;
 
+/**
+ * Data saved with Java preferences so that they are kept between sessions.The list of all skins and
+ * which ones the player owns and has equipped. Owned skins are saved as one comma-separated string
+ * of ids. The default skin is always owned.
+ */
 public final class Skins {
 
     public static final int PRICE = 200; // change this to 0 for fraud :)
@@ -102,6 +107,7 @@ public final class Skins {
         public boolean isDefault() {
             return DEFAULT_ID.equals(id);
         }
+
     }
 
 }
