@@ -2,7 +2,7 @@
 
 An endless underwater arcade game made in Java Swing: guide a crab across procedurally generated lanes of coral, fish, jellyfish and torpedoes.
 
-CBL project for 2IP90 Programming, TU/e, 2026–2027, by Teo Ene and Andrei Liță.
+CBL project for 2IP90 Programming, TU/e, 2026–2027, by Teo Ene and Andrei ____.
 
 <img width="1919" height="1079" alt="Scuttle gameplay" src="https://github.com/user-attachments/assets/ad245eef-8e8e-4670-825b-305152739a6e" />
 
@@ -30,6 +30,8 @@ No IDE? See [Command line](#command-line) below.
 
 ## 2. Running from source code
 The project is a standard Maven project. The main class is `scuttle.view.Scuttle`.
+
+**Dependencies:** the game itself only uses the Java standard library (Swing and AWT), so it needs nothing besides JDK 25 to run. The only external dependency is **JUnit 5** (with `opentest4j`), used for the tests and declared in `pom.xml`. Maven, or the Maven support built into your IDE, downloads it automatically on the first build, so the first build needs an internet connection.
 
 ### NetBeans
 1. *File → Open Project*, and select the `Scuttle` folder (it shows a Maven icon).

@@ -1,4 +1,4 @@
-name: Build Scuttle for Windows and Linux
+name: Build Scuttle for Windows, Linux and MacOS
 
 on:
   push:
